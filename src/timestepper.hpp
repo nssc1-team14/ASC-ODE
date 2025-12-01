@@ -103,6 +103,52 @@ namespace ASC_ode
     }
   };
 
+  class ExplicitRungeKutta : public TimeStepper
+  {
+    Matrix<> m_a;
+    Vector<> m_b, m_c;
+    int m_stages;
+    int m_n;
+    Vector<> m_k;
+    Vector<> m_ytemp;
+
+  public:
+    ExplicitRungeKutta(std::shared_ptr<NonlinearFunction> rhs,
+                       const Matrix<> &a,
+                       const Vector<> &b,
+                       const Vector<> &c)
+      : TimeStepper(rhs),
+        m_a(a), m_b(b), m_c(c),
+        m_stages(c.size()),
+        m_n(rhs->dimX()),
+        m_k(m_stages * m_n),
+        m_ytemp(m_n)
+    { }
+
+    void DoStep(double tau, VectorView<double> y) override
+    {
+
+      for (int j = 0; j < m_stages; ++j)
+      {
+        m_ytemp = y;
+
+        for (int l = 0; l < j; ++l)
+        {
+          auto kl = m_k.range(l * m_n, (l + 1) * m_n);
+          m_ytemp += tau * m_a(j, l) * kl;
+        }
+
+        auto kj = m_k.range(j * m_n, (j + 1) * m_n);
+        this->m_rhs->evaluate(m_ytemp, kj);
+      }
+
+      for (int j = 0; j < m_stages; ++j)
+      {
+        auto kj = m_k.range(j * m_n, (j + 1) * m_n);
+        y += tau * m_b(j) * kj;
+      }
+    }
+  };
 
 }
 

@@ -39,27 +39,27 @@ public:
 
 int main()
 {
-  double tend = 20*M_PI;
-  int steps = 1000;
+  double tend = 4*M_PI;
+  int steps = 100;
   double tau = tend/steps;
 
   Vector<> y = { 1, 0 };  // initializer list
   auto rhs = std::make_shared<MassSpring>(1.0, 1.0);
 
 
-/*
-  Vector<> Radau(3), RadauWeight(3);
-  GaussRadau (Radau, RadauWeight);
-  // not sure about weights, comput them via ComputeABfromC
-  cout << "Radau = " << Radau << ", weight = " << RadauWeight <<  endl;
-        Vector<> Gauss2c(2), Gauss3c(3);
-*/
+
+  // Vector<> Radau(3), RadauWeight(3);
+  // GaussRadau (Radau, RadauWeight);
+  // // not sure about weights, comput them via ComputeABfromC
+  // std::cout << "Radau = " << Radau << ", weight = " << RadauWeight << std::endl;
+  //       Vector<> Gauss2c(2), Gauss3c(3);
+
 
 
   // ExplicitEuler stepper(rhs);
   // ImplicitEuler stepper(rhs);
   // ImprovedEuler stepper(rhs);
-  CrankNicolson stepper(rhs);
+  // CrankNicolson stepper(rhs);
 
   // RungeKutta stepper(rhs, Gauss2a, Gauss2b, Gauss2c);
 
@@ -87,6 +87,12 @@ int main()
   auto [a, b] = ComputeABfromC(c);
   ImplicitRungeKutta stepper(rhs, a, b, c);
   */
+
+  Matrix<> a1(1,1); a1(0,0) = 0.0;
+  Vector<> b1(1);   b1(0) = 1.0;
+  Vector<> c1(1);   c1(0) = 0.0;
+
+  ExplicitRungeKutta stepper(rhs, a1, b1, c1);
 
 
   std::ofstream outfile ("output_test_ode.txt");
