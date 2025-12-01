@@ -83,64 +83,8 @@ namespace ASC_ode
       y += tau * m_vecf;
     }
   };
-  // ============================================================
-  // Crank–Nicolson equation:
-  // F(y_new) = y_new - y_old - (tau/2)*(f(y_old) + f(y_new)) = 0
-  // ============================================================
-  class CrankNicolsonEquation : public NonlinearFunction
-  {
-    std::shared_ptr<NonlinearFunction> m_rhs;
-    Vector<> m_yold;
-    double m_tau;
 
-  public:
-    CrankNicolsonEquation(std::shared_ptr<NonlinearFunction> rhs)
-      : m_rhs(rhs),
-        m_yold(rhs->dimX()),
-        m_tau(0.0)
-    { }
 
-    void set(double tau, VectorView<double> yold)
-    {
-      m_tau = tau;
-      m_yold = yold;   // copy y_old
-    }
-
-    size_t dimX() const override { return m_rhs->dimX(); }
-    size_t dimF() const override { return m_rhs->dimF(); }
-
-    void evaluate (VectorView<double> x, VectorView<double> f) const override
-    {
-      // x = y_new
-      Vector<> f_new(dimF());
-      Vector<> f_old(dimF());
-
-      // f(y_new), f(y_old)
-      m_rhs->evaluate(x,      f_new);
-      m_rhs->evaluate(m_yold, f_old);
-
-      // F = y_new - y_old - (tau/2)*(f(y_old) + f(y_new))
-      f = x;
-      f -= m_yold;
-      f -= 0.5 * m_tau * f_new;
-      f -= 0.5 * m_tau * f_old;
-    }
-
-    void evaluateDeriv (VectorView<double> x, MatrixView<double> df) const override
-    {
-      // dF/dy_new = I - (tau/2) * f'(y_new)
-      Matrix<double> jac(dimF(), dimX());
-      m_rhs->evaluateDeriv(x, jac);
-
-      df = 0.0;
-      df.diag() = 1.0;
-      df -= 0.5 * m_tau * jac;
-    }
-  };
-
-  // ============================================================
-  // Crank–Nicolson time stepper
-  // ============================================================
   class CrankNicolson : public TimeStepper
   {
     std::shared_ptr<CrankNicolsonEquation> m_equ;
@@ -159,8 +103,6 @@ namespace ASC_ode
     }
   };
 
-
-  
 
 }
 
