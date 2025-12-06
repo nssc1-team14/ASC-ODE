@@ -8,6 +8,7 @@ include_directories(src nanoblas/src)
 
 add_subdirectory (src)
 add_subdirectory (nanoblas)
+add_subdirectory (mechsystem)
 
 add_compile_options(-fpermissive)
 
