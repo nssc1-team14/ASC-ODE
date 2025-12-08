@@ -180,21 +180,112 @@ public:
   
   virtual void evaluateDeriv (VectorView<double> x, MatrixView<double> df) const override
   {
-    // TODO: exact differentiation
-    double eps = 1e-8;
-    Vector<> xl(dimX()), xr(dimX()), fl(dimF()), fr(dimF());
-    for (size_t i = 0; i < dimX(); i++)
+    const size_t N   = mss.masses().size();
+    const int    dim = D;
+    const size_t nX  = dim * N;
+
+    df = 0.0;
+
+    // positions of masses from state vector
+    auto xmat = x.asMatrix(N, dim);
+    auto & masses  = mss.masses();
+    auto & springs = mss.springs();
+    auto & fixes   = mss.fixes();
+
+    for (const auto & spring : springs)
+    {
+      const Connector &c1 = spring.connectors[0];
+      const Connector &c2 = spring.connectors[1];
+
+      // positions of the two connectors
+      Vec<D> p1, p2;
+      if (c1.type == Connector::FIX)
+        p1 = fixes[c1.nr].pos;
+      else
+        p1 = xmat.row(c1.nr);
+
+      if (c2.type == Connector::FIX)
+        p2 = fixes[c2.nr].pos;
+      else
+        p2 = xmat.row(c2.nr);
+
+      // d = p2 - p1, r = |d|
+      Vec<D> d = p2 - p1;
+      double r2 = 0.0;
+      for (int k = 0; k < dim; ++k)
+        r2 += d(k)*d(k);
+
+      double r = std::sqrt(r2);
+      if (r < 1e-12)   // avoid division by ~0
+        continue;
+
+      double L     = spring.length;
+      double kappa = spring.stiffness;
+
+      // F1 = kappa * (1 - L/r) * d
+      // A = dF1/dd = kappa*(beta*I + (L/r^3)*d d^T)
+      double beta   = 1.0 - L/r;
+      double coeff1 = kappa * beta;
+      double coeff2 = kappa * L / (r2 * r);   // = kappa*L / r^3
+
+      Matrix<> A(dim, dim);
+      for (int a = 0; a < dim; ++a)
+        for (int b = 0; b < dim; ++b)
+        {
+          double val = coeff2 * d(a) * d(b);
+          if (a == b)
+            val += coeff1;
+          A(a,b) = val;
+        }
+
+      // helper: add scaled A block at (rowMass, colMass)
+      auto add_block = [&](int rowMass, int colMass, double scale)
       {
-        xl = x;
-        xl(i) -= eps;
-        xr = x;
-        xr(i) += eps;
-        evaluate (xl, fl);
-        evaluate (xr, fr);
-        df.col(i) = 1/(2*eps) * (fr-fl);
+        int row0 = rowMass * dim;
+        int col0 = colMass * dim;
+        for (int a = 0; a < dim; ++a)
+          for (int b = 0; b < dim; ++b)
+            df(row0 + a, col0 + b) += scale * A(a,b);
+      };
+
+      // contributions for mass at c1 (force F1)
+      if (c1.type == Connector::MASS)
+      {
+        int i      = static_cast<int>(c1.nr);
+        double mi  = masses[i].mass;
+        double s_i = 1.0 / mi;     // a_i = F_i / m_i
+
+        // d a_i / d p1 = (1/mi) * dF1/dp1 = (-A)/mi   (p1 belongs to mass i)
+        add_block(i, i, -s_i);
+
+        // if c2 is mass j: d a_i / d p2 = (1/mi) * dF1/dp2 = (+A)/mi
+        if (c2.type == Connector::MASS)
+        {
+          int j = static_cast<int>(c2.nr);
+          add_block(i, j, +s_i);
+        }
+        // if c2 is FIX: no derivative wrt fixed position
       }
+
+      // contributions for mass at c2 (force F2 = -F1)
+      if (c2.type == Connector::MASS)
+      {
+        int j      = static_cast<int>(c2.nr);
+        double mj  = masses[j].mass;
+        double s_j = 1.0 / mj;     // a_j = F_j / m_j
+
+        // d a_j / d p2 = (1/mj) * dF2/dp2 = (-A)/mj  (since dF2/dp2 = -A)
+        add_block(j, j, -s_j);
+
+        // if c1 is mass i: d a_j / d p1 = (1/mj) * dF2/dp1 = (+A)/mj
+        if (c1.type == Connector::MASS)
+        {
+          int i = static_cast<int>(c1.nr);
+          add_block(j, i, +s_j);
+        }
+      }
+    }// gravity has no x-dependence → no contribution
   }
-  
 };
 
 #endif

@@ -1,3 +1,3 @@
 
-install (FILES nonlinfunc.hpp Newton.hpp ode.hpp DESTINATION include) 
+install (FILES nonlinfunc.hpp Newton.hpp autodiff.hpp ode.hpp DESTINATION include) 
 
