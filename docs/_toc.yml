@@ -6,6 +6,7 @@ root: intro.md
 chapters:
   - file: exer17.md
   - file: exer18.md
+  - file: exer19.md
   - file: exer20.md
 
 
