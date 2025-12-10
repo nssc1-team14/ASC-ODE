@@ -1,0 +1,2373 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Exercise 17 — Mass–Spring Integrators &#8212; ASC-ODE</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'exer17';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Exercise 18 — AutoDiff Legendre Polynomials" href="exer18.html" />
+    <link rel="prev" title="Welcome to ASC-ODE’s documentation!" href="intro.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/ASC_Logo_transparent_300ppi_RGB.png" class="logo__image only-light" alt="ASC-ODE - Home"/>
+    <script>document.write(`<img src="_static/ASC_Logo_transparent_300ppi_RGB.png" class="logo__image only-dark" alt="ASC-ODE - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    Welcome to ASC-ODE’s documentation!
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Exercise 17 — Mass–Spring Integrators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exer18.html">Exercise 18 — AutoDiff Legendre Polynomials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exer20.html">Exercise 20 — Mass–Spring Assignment Status</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/nssc1-team14/ASC-ODE.git" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/exer17.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Exercise 17 — Mass–Spring Integrators</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#explicit-euler">Explicit Euler</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stabilized-explicit-euler-square">Stabilized Explicit Euler (Square)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#improved-euler">Improved Euler</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implicit-euler">Implicit Euler</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cranknicolson">Crank–Nicolson</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparison-across-time-steps">Comparison across time steps</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rc-circuit-benchmarks-test-rc-output">RC circuit benchmarks (test_rc output)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#case-1-r-1-c-1-e0-1-u0-0-tend-10-steps-200-0-05">Case 1 — R=1, C=1, E0=1, u0=0, tend=10, steps=200 (τ=0.05)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#case-2-r-2-c-0-5-e0-1-5-u0-0-5-tend-8-steps-120-0-0667">Case 2 — R=2, C=0.5, E0=1.5, u0=0.5, tend=8, steps=120 (τ≈0.0667)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#case-3-r-0-5-c-2-e0-0-8-u0-1-tend-12-steps-240-0-05">Case 3 — R=0.5, C=2, E0=0.8, u0=1, tend=12, steps=240 (τ=0.05)</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="exercise-17-massspring-integrators">
+<h1>Exercise 17 — Mass–Spring Integrators<a class="headerlink" href="#exercise-17-massspring-integrators" title="Link to this heading">#</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>This exercise documents trajectories for the harmonic oscillator / mass–spring benchmark using explicit Euler, stabilized explicit Euler (square), improved Euler (Heun), implicit Euler, and Crank–Nicolson. The plots below show time histories and phase portraits, allowing comparison of stability and damping for different time steps.</p>
+</section>
+<section id="explicit-euler">
+<h2>Explicit Euler<a class="headerlink" href="#explicit-euler" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head text-center"><p>Time</p></th>
+<th class="head text-center"><p>Phase</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p><img alt="Explicit Euler time plot" src="_images/expliciteuler_time.svg" /></p></td>
+<td class="text-center"><p><img alt="Explicit Euler phase plot" src="_images/expliciteuler_phase.svg" /></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="stabilized-explicit-euler-square">
+<h2>Stabilized Explicit Euler (Square)<a class="headerlink" href="#stabilized-explicit-euler-square" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head text-center"><p>Time</p></th>
+<th class="head text-center"><p>Phase</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p><img alt="Stabilized explicit Euler time plot" src="_images/expliciteulersq_time.svg" /></p></td>
+<td class="text-center"><p><img alt="Stabilized explicit Euler phase plot" src="_images/expliciteulersq_phase.svg" /></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Note on “sq” marker:</strong> the label “sq” simply denotes runs where both the number of steps and the final time <code class="docutils literal notranslate"><span class="pre">t_end</span></code> were squared compared to the baseline configuration.</p>
+</section>
+<section id="improved-euler">
+<h2>Improved Euler<a class="headerlink" href="#improved-euler" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head text-center"><p>Time</p></th>
+<th class="head text-center"><p>Phase</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p><img alt="Improved Euler time plot" src="_images/improvedeuler_time.svg" /></p></td>
+<td class="text-center"><p><img alt="Improved Euler phase plot" src="_images/improvedeuler_phase.svg" /></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="implicit-euler">
+<h2>Implicit Euler<a class="headerlink" href="#implicit-euler" title="Link to this heading">#</a></h2>
+<p>This section sketches the implicit Euler (backward Euler) implementation as outlined in the course notes. The circuit example will be added later; for now we illustrate the method on the harmonic oscillator benchmark.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head text-center"><p>Time</p></th>
+<th class="head text-center"><p>Phase</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p><img alt="Implicit Euler time plot" src="_images/impliciteuler_time.svg" /></p></td>
+<td class="text-center"><p><img alt="Implicit Euler phase plot" src="_images/impliciteuler_phase.svg" /></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The fully implicit update damps the oscillations more strongly than the explicit schemes, providing unconditional stability for this linear test while introducing numerical dissipation.</p>
+</section>
+<section id="cranknicolson">
+<h2>Crank–Nicolson<a class="headerlink" href="#cranknicolson" title="Link to this heading">#</a></h2>
+<p>Crank–Nicolson uses the trapezoidal rule (implicit midpoint) for the first-order system version of the mass–spring oscillator, yielding second-order accuracy and only mild numerical damping.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head text-center"><p>Time</p></th>
+<th class="head text-center"><p>Phase</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p><img alt="Crank–Nicolson time plot" src="_images/cranknicolson_time.svg" /></p></td>
+<td class="text-center"><p><img alt="Crank–Nicolson phase plot" src="_images/cranknicolson_phase.svg" /></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Compared to implicit Euler, the trajectories stay close to the true ellipse with much less energy loss while still remaining stable for larger time steps than the explicit schemes.</p>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Explicit Euler shows the expected energy growth and spirals outwards in phase space.</p></li>
+<li><p>The stabilized square scheme reduces drift and keeps oscillations bounded for this step size.</p></li>
+<li><p>Improved Euler provides much better energy conservation and near-elliptic phase trajectories.</p></li>
+<li><p>Implicit Euler is unconditionally stable but introduces significant numerical damping, causing inward spirals in phase space.</p></li>
+<li><p>Crank–Nicolson balances stability and accuracy: it remains stable for larger time steps and largely preserves energy, with slight damping compared to the exact solution.</p></li>
+</ul>
+</section>
+<section id="comparison-across-time-steps">
+<h2>Comparison across time steps<a class="headerlink" href="#comparison-across-time-steps" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>For coarse time steps, explicit Euler quickly blows up; stabilized explicit Euler holds but distorts amplitude; improved Euler stays reasonable but can drift.</p></li>
+<li><p>Implicit Euler remains stable for any tested step size but heavily damps the motion.</p></li>
+<li><p>Crank–Nicolson stays stable and keeps near-elliptic orbits even with larger steps, making it preferable when both stability and energy behavior matter.</p></li>
+</ul>
+</section>
+<section id="rc-circuit-benchmarks-test-rc-output">
+<h2>RC circuit benchmarks (test_rc output)<a class="headerlink" href="#rc-circuit-benchmarks-test-rc-output" title="Link to this heading">#</a></h2>
+<p>Numerical solutions of the first-order RC ODE were generated with <code class="docutils literal notranslate"><span class="pre">demos/test_rc.cpp</span></code> for three parameter sets using explicit Euler, implicit Euler, and improved Euler. Each table below lists the time <code class="docutils literal notranslate"><span class="pre">t</span></code> and capacitor voltage <code class="docutils literal notranslate"><span class="pre">u(t)</span></code> for every step.</p>
+<section id="case-1-r-1-c-1-e0-1-u0-0-tend-10-steps-200-0-05">
+<h3>Case 1 — R=1, C=1, E0=1, u0=0, tend=10, steps=200 (τ=0.05)<a class="headerlink" href="#case-1-r-1-c-1-e0-1-u0-0-tend-10-steps-200-0-05" title="Link to this heading">#</a></h3>
+<details>
+<summary>Explicit Euler</summary>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span>    <span class="n">u</span>
+<span class="mi">0</span>  <span class="mi">0</span>
+<span class="mf">0.05</span>  <span class="mf">0.05</span>
+<span class="mf">0.1</span>  <span class="mf">0.0975</span>
+<span class="mf">0.15</span>  <span class="mf">0.142625</span>
+<span class="mf">0.2</span>  <span class="mf">0.185494</span>
+<span class="mf">0.25</span>  <span class="mf">0.226219</span>
+<span class="mf">0.3</span>  <span class="mf">0.264908</span>
+<span class="mf">0.35</span>  <span class="mf">0.301663</span>
+<span class="mf">0.4</span>  <span class="mf">0.33658</span>
+<span class="mf">0.45</span>  <span class="mf">0.369751</span>
+<span class="mf">0.5</span>  <span class="mf">0.401263</span>
+<span class="mf">0.55</span>  <span class="mf">0.4312</span>
+<span class="mf">0.6</span>  <span class="mf">0.45964</span>
+<span class="mf">0.65</span>  <span class="mf">0.486658</span>
+<span class="mf">0.7</span>  <span class="mf">0.512325</span>
+<span class="mf">0.75</span>  <span class="mf">0.536709</span>
+<span class="mf">0.8</span>  <span class="mf">0.559873</span>
+<span class="mf">0.85</span>  <span class="mf">0.58188</span>
+<span class="mf">0.9</span>  <span class="mf">0.602786</span>
+<span class="mf">0.95</span>  <span class="mf">0.622646</span>
+<span class="mi">1</span>  <span class="mf">0.641514</span>
+<span class="mf">1.05</span>  <span class="mf">0.659438</span>
+<span class="mf">1.1</span>  <span class="mf">0.676466</span>
+<span class="mf">1.15</span>  <span class="mf">0.692643</span>
+<span class="mf">1.2</span>  <span class="mf">0.708011</span>
+<span class="mf">1.25</span>  <span class="mf">0.72261</span>
+<span class="mf">1.3</span>  <span class="mf">0.73648</span>
+<span class="mf">1.35</span>  <span class="mf">0.749656</span>
+<span class="mf">1.4</span>  <span class="mf">0.762173</span>
+<span class="mf">1.45</span>  <span class="mf">0.774064</span>
+<span class="mf">1.5</span>  <span class="mf">0.785361</span>
+<span class="mf">1.55</span>  <span class="mf">0.796093</span>
+<span class="mf">1.6</span>  <span class="mf">0.806289</span>
+<span class="mf">1.65</span>  <span class="mf">0.815974</span>
+<span class="mf">1.7</span>  <span class="mf">0.825175</span>
+<span class="mf">1.75</span>  <span class="mf">0.833917</span>
+<span class="mf">1.8</span>  <span class="mf">0.842221</span>
+<span class="mf">1.85</span>  <span class="mf">0.85011</span>
+<span class="mf">1.9</span>  <span class="mf">0.857604</span>
+<span class="mf">1.95</span>  <span class="mf">0.864724</span>
+<span class="mi">2</span>  <span class="mf">0.871488</span>
+<span class="mf">2.05</span>  <span class="mf">0.877913</span>
+<span class="mf">2.1</span>  <span class="mf">0.884018</span>
+<span class="mf">2.15</span>  <span class="mf">0.889817</span>
+<span class="mf">2.2</span>  <span class="mf">0.895326</span>
+<span class="mf">2.25</span>  <span class="mf">0.90056</span>
+<span class="mf">2.3</span>  <span class="mf">0.905532</span>
+<span class="mf">2.35</span>  <span class="mf">0.910255</span>
+<span class="mf">2.4</span>  <span class="mf">0.914742</span>
+<span class="mf">2.45</span>  <span class="mf">0.919005</span>
+<span class="mf">2.5</span>  <span class="mf">0.923055</span>
+<span class="mf">2.55</span>  <span class="mf">0.926902</span>
+<span class="mf">2.6</span>  <span class="mf">0.930557</span>
+<span class="mf">2.65</span>  <span class="mf">0.934029</span>
+<span class="mf">2.7</span>  <span class="mf">0.937328</span>
+<span class="mf">2.75</span>  <span class="mf">0.940461</span>
+<span class="mf">2.8</span>  <span class="mf">0.943438</span>
+<span class="mf">2.85</span>  <span class="mf">0.946266</span>
+<span class="mf">2.9</span>  <span class="mf">0.948953</span>
+<span class="mf">2.95</span>  <span class="mf">0.951505</span>
+<span class="mi">3</span>  <span class="mf">0.95393</span>
+<span class="mf">3.05</span>  <span class="mf">0.956234</span>
+<span class="mf">3.1</span>  <span class="mf">0.958422</span>
+<span class="mf">3.15</span>  <span class="mf">0.960501</span>
+<span class="mf">3.2</span>  <span class="mf">0.962476</span>
+<span class="mf">3.25</span>  <span class="mf">0.964352</span>
+<span class="mf">3.3</span>  <span class="mf">0.966134</span>
+<span class="mf">3.35</span>  <span class="mf">0.967828</span>
+<span class="mf">3.4</span>  <span class="mf">0.969436</span>
+<span class="mf">3.45</span>  <span class="mf">0.970965</span>
+<span class="mf">3.5</span>  <span class="mf">0.972416</span>
+<span class="mf">3.55</span>  <span class="mf">0.973795</span>
+<span class="mf">3.6</span>  <span class="mf">0.975106</span>
+<span class="mf">3.65</span>  <span class="mf">0.97635</span>
+<span class="mf">3.7</span>  <span class="mf">0.977533</span>
+<span class="mf">3.75</span>  <span class="mf">0.978656</span>
+<span class="mf">3.8</span>  <span class="mf">0.979723</span>
+<span class="mf">3.85</span>  <span class="mf">0.980737</span>
+<span class="mf">3.9</span>  <span class="mf">0.9817</span>
+<span class="mf">3.95</span>  <span class="mf">0.982615</span>
+<span class="mi">4</span>  <span class="mf">0.983485</span>
+<span class="mf">4.05</span>  <span class="mf">0.98431</span>
+<span class="mf">4.1</span>  <span class="mf">0.985095</span>
+<span class="mf">4.15</span>  <span class="mf">0.98584</span>
+<span class="mf">4.2</span>  <span class="mf">0.986548</span>
+<span class="mf">4.25</span>  <span class="mf">0.987221</span>
+<span class="mf">4.3</span>  <span class="mf">0.98786</span>
+<span class="mf">4.35</span>  <span class="mf">0.988467</span>
+<span class="mf">4.4</span>  <span class="mf">0.989043</span>
+<span class="mf">4.45</span>  <span class="mf">0.989591</span>
+<span class="mf">4.5</span>  <span class="mf">0.990112</span>
+<span class="mf">4.55</span>  <span class="mf">0.990606</span>
+<span class="mf">4.6</span>  <span class="mf">0.991076</span>
+<span class="mf">4.65</span>  <span class="mf">0.991522</span>
+<span class="mf">4.7</span>  <span class="mf">0.991946</span>
+<span class="mf">4.75</span>  <span class="mf">0.992349</span>
+<span class="mf">4.8</span>  <span class="mf">0.992731</span>
+<span class="mf">4.85</span>  <span class="mf">0.993095</span>
+<span class="mf">4.9</span>  <span class="mf">0.99344</span>
+<span class="mf">4.95</span>  <span class="mf">0.993768</span>
+<span class="mi">5</span>  <span class="mf">0.994079</span>
+<span class="mf">5.05</span>  <span class="mf">0.994375</span>
+<span class="mf">5.1</span>  <span class="mf">0.994657</span>
+<span class="mf">5.15</span>  <span class="mf">0.994924</span>
+<span class="mf">5.2</span>  <span class="mf">0.995178</span>
+<span class="mf">5.25</span>  <span class="mf">0.995419</span>
+<span class="mf">5.3</span>  <span class="mf">0.995648</span>
+<span class="mf">5.35</span>  <span class="mf">0.995865</span>
+<span class="mf">5.4</span>  <span class="mf">0.996072</span>
+<span class="mf">5.45</span>  <span class="mf">0.996269</span>
+<span class="mf">5.5</span>  <span class="mf">0.996455</span>
+<span class="mf">5.55</span>  <span class="mf">0.996632</span>
+<span class="mf">5.6</span>  <span class="mf">0.996801</span>
+<span class="mf">5.65</span>  <span class="mf">0.996961</span>
+<span class="mf">5.7</span>  <span class="mf">0.997113</span>
+<span class="mf">5.75</span>  <span class="mf">0.997257</span>
+<span class="mf">5.8</span>  <span class="mf">0.997394</span>
+<span class="mf">5.85</span>  <span class="mf">0.997525</span>
+<span class="mf">5.9</span>  <span class="mf">0.997648</span>
+<span class="mf">5.95</span>  <span class="mf">0.997766</span>
+<span class="mi">6</span>  <span class="mf">0.997878</span>
+<span class="mf">6.05</span>  <span class="mf">0.997984</span>
+<span class="mf">6.1</span>  <span class="mf">0.998085</span>
+<span class="mf">6.15</span>  <span class="mf">0.99818</span>
+<span class="mf">6.2</span>  <span class="mf">0.998271</span>
+<span class="mf">6.25</span>  <span class="mf">0.998358</span>
+<span class="mf">6.3</span>  <span class="mf">0.99844</span>
+<span class="mf">6.35</span>  <span class="mf">0.998518</span>
+<span class="mf">6.4</span>  <span class="mf">0.998592</span>
+<span class="mf">6.45</span>  <span class="mf">0.998662</span>
+<span class="mf">6.5</span>  <span class="mf">0.998729</span>
+<span class="mf">6.55</span>  <span class="mf">0.998793</span>
+<span class="mf">6.6</span>  <span class="mf">0.998853</span>
+<span class="mf">6.65</span>  <span class="mf">0.99891</span>
+<span class="mf">6.7</span>  <span class="mf">0.998965</span>
+<span class="mf">6.75</span>  <span class="mf">0.999017</span>
+<span class="mf">6.8</span>  <span class="mf">0.999066</span>
+<span class="mf">6.85</span>  <span class="mf">0.999113</span>
+<span class="mf">6.9</span>  <span class="mf">0.999157</span>
+<span class="mf">6.95</span>  <span class="mf">0.999199</span>
+<span class="mi">7</span>  <span class="mf">0.999239</span>
+<span class="mf">7.05</span>  <span class="mf">0.999277</span>
+<span class="mf">7.1</span>  <span class="mf">0.999313</span>
+<span class="mf">7.15</span>  <span class="mf">0.999348</span>
+<span class="mf">7.2</span>  <span class="mf">0.99938</span>
+<span class="mf">7.25</span>  <span class="mf">0.999411</span>
+<span class="mf">7.3</span>  <span class="mf">0.999441</span>
+<span class="mf">7.35</span>  <span class="mf">0.999469</span>
+<span class="mf">7.4</span>  <span class="mf">0.999495</span>
+<span class="mf">7.45</span>  <span class="mf">0.99952</span>
+<span class="mf">7.5</span>  <span class="mf">0.999544</span>
+<span class="mf">7.55</span>  <span class="mf">0.999567</span>
+<span class="mf">7.6</span>  <span class="mf">0.999589</span>
+<span class="mf">7.65</span>  <span class="mf">0.999609</span>
+<span class="mf">7.7</span>  <span class="mf">0.999629</span>
+<span class="mf">7.75</span>  <span class="mf">0.999648</span>
+<span class="mf">7.8</span>  <span class="mf">0.999665</span>
+<span class="mf">7.85</span>  <span class="mf">0.999682</span>
+<span class="mf">7.9</span>  <span class="mf">0.999698</span>
+<span class="mf">7.95</span>  <span class="mf">0.999713</span>
+<span class="mi">8</span>  <span class="mf">0.999727</span>
+<span class="mf">8.05</span>  <span class="mf">0.999741</span>
+<span class="mf">8.1</span>  <span class="mf">0.999754</span>
+<span class="mf">8.15</span>  <span class="mf">0.999766</span>
+<span class="mf">8.2</span>  <span class="mf">0.999778</span>
+<span class="mf">8.25</span>  <span class="mf">0.999789</span>
+<span class="mf">8.3</span>  <span class="mf">0.999799</span>
+<span class="mf">8.35</span>  <span class="mf">0.99981</span>
+<span class="mf">8.4</span>  <span class="mf">0.999819</span>
+<span class="mf">8.45</span>  <span class="mf">0.999828</span>
+<span class="mf">8.5</span>  <span class="mf">0.999837</span>
+<span class="mf">8.55</span>  <span class="mf">0.999845</span>
+<span class="mf">8.6</span>  <span class="mf">0.999853</span>
+<span class="mf">8.65</span>  <span class="mf">0.99986</span>
+<span class="mf">8.7</span>  <span class="mf">0.999867</span>
+<span class="mf">8.75</span>  <span class="mf">0.999874</span>
+<span class="mf">8.8</span>  <span class="mf">0.99988</span>
+<span class="mf">8.85</span>  <span class="mf">0.999886</span>
+<span class="mf">8.9</span>  <span class="mf">0.999892</span>
+<span class="mf">8.95</span>  <span class="mf">0.999897</span>
+<span class="mi">9</span>  <span class="mf">0.999902</span>
+<span class="mf">9.05</span>  <span class="mf">0.999907</span>
+<span class="mf">9.1</span>  <span class="mf">0.999912</span>
+<span class="mf">9.15</span>  <span class="mf">0.999916</span>
+<span class="mf">9.2</span>  <span class="mf">0.99992</span>
+<span class="mf">9.25</span>  <span class="mf">0.999924</span>
+<span class="mf">9.3</span>  <span class="mf">0.999928</span>
+<span class="mf">9.35</span>  <span class="mf">0.999932</span>
+<span class="mf">9.4</span>  <span class="mf">0.999935</span>
+<span class="mf">9.45</span>  <span class="mf">0.999938</span>
+<span class="mf">9.5</span>  <span class="mf">0.999941</span>
+<span class="mf">9.55</span>  <span class="mf">0.999944</span>
+<span class="mf">9.6</span>  <span class="mf">0.999947</span>
+<span class="mf">9.65</span>  <span class="mf">0.99995</span>
+<span class="mf">9.7</span>  <span class="mf">0.999952</span>
+<span class="mf">9.75</span>  <span class="mf">0.999955</span>
+<span class="mf">9.8</span>  <span class="mf">0.999957</span>
+<span class="mf">9.85</span>  <span class="mf">0.999959</span>
+<span class="mf">9.9</span>  <span class="mf">0.999961</span>
+<span class="mf">9.95</span>  <span class="mf">0.999963</span>
+<span class="mi">10</span>  <span class="mf">0.999965</span>
+</pre></div>
+</div>
+</details>
+<details>
+<summary>Implicit Euler</summary>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span>    <span class="n">u</span>
+<span class="mi">0</span>  <span class="mi">0</span>
+<span class="mf">0.05</span>  <span class="mf">0.047619</span>
+<span class="mf">0.1</span>  <span class="mf">0.0929705</span>
+<span class="mf">0.15</span>  <span class="mf">0.136162</span>
+<span class="mf">0.2</span>  <span class="mf">0.177298</span>
+<span class="mf">0.25</span>  <span class="mf">0.216474</span>
+<span class="mf">0.3</span>  <span class="mf">0.253785</span>
+<span class="mf">0.35</span>  <span class="mf">0.289319</span>
+<span class="mf">0.4</span>  <span class="mf">0.323161</span>
+<span class="mf">0.45</span>  <span class="mf">0.355391</span>
+<span class="mf">0.5</span>  <span class="mf">0.386087</span>
+<span class="mf">0.55</span>  <span class="mf">0.415321</span>
+<span class="mf">0.6</span>  <span class="mf">0.443163</span>
+<span class="mf">0.65</span>  <span class="mf">0.469679</span>
+<span class="mf">0.7</span>  <span class="mf">0.494932</span>
+<span class="mf">0.75</span>  <span class="mf">0.518983</span>
+<span class="mf">0.8</span>  <span class="mf">0.541888</span>
+<span class="mf">0.85</span>  <span class="mf">0.563703</span>
+<span class="mf">0.9</span>  <span class="mf">0.584479</span>
+<span class="mf">0.95</span>  <span class="mf">0.604266</span>
+<span class="mi">1</span>  <span class="mf">0.623111</span>
+<span class="mf">1.05</span>  <span class="mf">0.641058</span>
+<span class="mf">1.1</span>  <span class="mf">0.65815</span>
+<span class="mf">1.15</span>  <span class="mf">0.674429</span>
+<span class="mf">1.2</span>  <span class="mf">0.689932</span>
+<span class="mf">1.25</span>  <span class="mf">0.704697</span>
+<span class="mf">1.3</span>  <span class="mf">0.718759</span>
+<span class="mf">1.35</span>  <span class="mf">0.732152</span>
+<span class="mf">1.4</span>  <span class="mf">0.744906</span>
+<span class="mf">1.45</span>  <span class="mf">0.757054</span>
+<span class="mf">1.5</span>  <span class="mf">0.768623</span>
+<span class="mf">1.55</span>  <span class="mf">0.779641</span>
+<span class="mf">1.6</span>  <span class="mf">0.790134</span>
+<span class="mf">1.65</span>  <span class="mf">0.800127</span>
+<span class="mf">1.7</span>  <span class="mf">0.809645</span>
+<span class="mf">1.75</span>  <span class="mf">0.81871</span>
+<span class="mf">1.8</span>  <span class="mf">0.827343</span>
+<span class="mf">1.85</span>  <span class="mf">0.835564</span>
+<span class="mf">1.9</span>  <span class="mf">0.843395</span>
+<span class="mf">1.95</span>  <span class="mf">0.850852</span>
+<span class="mi">2</span>  <span class="mf">0.857954</span>
+<span class="mf">2.05</span>  <span class="mf">0.864718</span>
+<span class="mf">2.1</span>  <span class="mf">0.87116</span>
+<span class="mf">2.15</span>  <span class="mf">0.877296</span>
+<span class="mf">2.2</span>  <span class="mf">0.883139</span>
+<span class="mf">2.25</span>  <span class="mf">0.888703</span>
+<span class="mf">2.3</span>  <span class="mf">0.894003</span>
+<span class="mf">2.35</span>  <span class="mf">0.899051</span>
+<span class="mf">2.4</span>  <span class="mf">0.903858</span>
+<span class="mf">2.45</span>  <span class="mf">0.908436</span>
+<span class="mf">2.5</span>  <span class="mf">0.912796</span>
+<span class="mf">2.55</span>  <span class="mf">0.916949</span>
+<span class="mf">2.6</span>  <span class="mf">0.920904</span>
+<span class="mf">2.65</span>  <span class="mf">0.92467</span>
+<span class="mf">2.7</span>  <span class="mf">0.928257</span>
+<span class="mf">2.75</span>  <span class="mf">0.931674</span>
+<span class="mf">2.8</span>  <span class="mf">0.934927</span>
+<span class="mf">2.85</span>  <span class="mf">0.938026</span>
+<span class="mf">2.9</span>  <span class="mf">0.940977</span>
+<span class="mf">2.95</span>  <span class="mf">0.943788</span>
+<span class="mi">3</span>  <span class="mf">0.946464</span>
+<span class="mf">3.05</span>  <span class="mf">0.949014</span>
+<span class="mf">3.1</span>  <span class="mf">0.951442</span>
+<span class="mf">3.15</span>  <span class="mf">0.953754</span>
+<span class="mf">3.2</span>  <span class="mf">0.955956</span>
+<span class="mf">3.25</span>  <span class="mf">0.958054</span>
+<span class="mf">3.3</span>  <span class="mf">0.960051</span>
+<span class="mf">3.35</span>  <span class="mf">0.961953</span>
+<span class="mf">3.4</span>  <span class="mf">0.963765</span>
+<span class="mf">3.45</span>  <span class="mf">0.965491</span>
+<span class="mf">3.5</span>  <span class="mf">0.967134</span>
+<span class="mf">3.55</span>  <span class="mf">0.968699</span>
+<span class="mf">3.6</span>  <span class="mf">0.970189</span>
+<span class="mf">3.65</span>  <span class="mf">0.971609</span>
+<span class="mf">3.7</span>  <span class="mf">0.972961</span>
+<span class="mf">3.75</span>  <span class="mf">0.974248</span>
+<span class="mf">3.8</span>  <span class="mf">0.975475</span>
+<span class="mf">3.85</span>  <span class="mf">0.976643</span>
+<span class="mf">3.9</span>  <span class="mf">0.977755</span>
+<span class="mf">3.95</span>  <span class="mf">0.978814</span>
+<span class="mi">4</span>  <span class="mf">0.979823</span>
+<span class="mf">4.05</span>  <span class="mf">0.980784</span>
+<span class="mf">4.1</span>  <span class="mf">0.981699</span>
+<span class="mf">4.15</span>  <span class="mf">0.98257</span>
+<span class="mf">4.2</span>  <span class="mf">0.9834</span>
+<span class="mf">4.25</span>  <span class="mf">0.984191</span>
+<span class="mf">4.3</span>  <span class="mf">0.984944</span>
+<span class="mf">4.35</span>  <span class="mf">0.985661</span>
+<span class="mf">4.4</span>  <span class="mf">0.986343</span>
+<span class="mf">4.45</span>  <span class="mf">0.986994</span>
+<span class="mf">4.5</span>  <span class="mf">0.987613</span>
+<span class="mf">4.55</span>  <span class="mf">0.988203</span>
+<span class="mf">4.6</span>  <span class="mf">0.988765</span>
+<span class="mf">4.65</span>  <span class="mf">0.9893</span>
+<span class="mf">4.7</span>  <span class="mf">0.989809</span>
+<span class="mf">4.75</span>  <span class="mf">0.990295</span>
+<span class="mf">4.8</span>  <span class="mf">0.990757</span>
+<span class="mf">4.85</span>  <span class="mf">0.991197</span>
+<span class="mf">4.9</span>  <span class="mf">0.991616</span>
+<span class="mf">4.95</span>  <span class="mf">0.992015</span>
+<span class="mi">5</span>  <span class="mf">0.992396</span>
+<span class="mf">5.05</span>  <span class="mf">0.992758</span>
+<span class="mf">5.1</span>  <span class="mf">0.993103</span>
+<span class="mf">5.15</span>  <span class="mf">0.993431</span>
+<span class="mf">5.2</span>  <span class="mf">0.993744</span>
+<span class="mf">5.25</span>  <span class="mf">0.994042</span>
+<span class="mf">5.3</span>  <span class="mf">0.994325</span>
+<span class="mf">5.35</span>  <span class="mf">0.994596</span>
+<span class="mf">5.4</span>  <span class="mf">0.994853</span>
+<span class="mf">5.45</span>  <span class="mf">0.995098</span>
+<span class="mf">5.5</span>  <span class="mf">0.995332</span>
+<span class="mf">5.55</span>  <span class="mf">0.995554</span>
+<span class="mf">5.6</span>  <span class="mf">0.995766</span>
+<span class="mf">5.65</span>  <span class="mf">0.995967</span>
+<span class="mf">5.7</span>  <span class="mf">0.996159</span>
+<span class="mf">5.75</span>  <span class="mf">0.996342</span>
+<span class="mf">5.8</span>  <span class="mf">0.996516</span>
+<span class="mf">5.85</span>  <span class="mf">0.996682</span>
+<span class="mf">5.9</span>  <span class="mf">0.99684</span>
+<span class="mf">5.95</span>  <span class="mf">0.996991</span>
+<span class="mi">6</span>  <span class="mf">0.997134</span>
+<span class="mf">6.05</span>  <span class="mf">0.99727</span>
+<span class="mf">6.1</span>  <span class="mf">0.9974</span>
+<span class="mf">6.15</span>  <span class="mf">0.997524</span>
+<span class="mf">6.2</span>  <span class="mf">0.997642</span>
+<span class="mf">6.25</span>  <span class="mf">0.997754</span>
+<span class="mf">6.3</span>  <span class="mf">0.997861</span>
+<span class="mf">6.35</span>  <span class="mf">0.997963</span>
+<span class="mf">6.4</span>  <span class="mf">0.99806</span>
+<span class="mf">6.45</span>  <span class="mf">0.998153</span>
+<span class="mf">6.5</span>  <span class="mf">0.99824</span>
+<span class="mf">6.55</span>  <span class="mf">0.998324</span>
+<span class="mf">6.6</span>  <span class="mf">0.998404</span>
+<span class="mf">6.65</span>  <span class="mf">0.99848</span>
+<span class="mf">6.7</span>  <span class="mf">0.998552</span>
+<span class="mf">6.75</span>  <span class="mf">0.998621</span>
+<span class="mf">6.8</span>  <span class="mf">0.998687</span>
+<span class="mf">6.85</span>  <span class="mf">0.99875</span>
+<span class="mf">6.9</span>  <span class="mf">0.998809</span>
+<span class="mf">6.95</span>  <span class="mf">0.998866</span>
+<span class="mi">7</span>  <span class="mf">0.99892</span>
+<span class="mf">7.05</span>  <span class="mf">0.998971</span>
+<span class="mf">7.1</span>  <span class="mf">0.99902</span>
+<span class="mf">7.15</span>  <span class="mf">0.999067</span>
+<span class="mf">7.2</span>  <span class="mf">0.999111</span>
+<span class="mf">7.25</span>  <span class="mf">0.999154</span>
+<span class="mf">7.3</span>  <span class="mf">0.999194</span>
+<span class="mf">7.35</span>  <span class="mf">0.999232</span>
+<span class="mf">7.4</span>  <span class="mf">0.999269</span>
+<span class="mf">7.45</span>  <span class="mf">0.999304</span>
+<span class="mf">7.5</span>  <span class="mf">0.999337</span>
+<span class="mf">7.55</span>  <span class="mf">0.999368</span>
+<span class="mf">7.6</span>  <span class="mf">0.999399</span>
+<span class="mf">7.65</span>  <span class="mf">0.999427</span>
+<span class="mf">7.7</span>  <span class="mf">0.999454</span>
+<span class="mf">7.75</span>  <span class="mf">0.99948</span>
+<span class="mf">7.8</span>  <span class="mf">0.999505</span>
+<span class="mf">7.85</span>  <span class="mf">0.999529</span>
+<span class="mf">7.9</span>  <span class="mf">0.999551</span>
+<span class="mf">7.95</span>  <span class="mf">0.999573</span>
+<span class="mi">8</span>  <span class="mf">0.999593</span>
+<span class="mf">8.05</span>  <span class="mf">0.999612</span>
+<span class="mf">8.1</span>  <span class="mf">0.999631</span>
+<span class="mf">8.15</span>  <span class="mf">0.999648</span>
+<span class="mf">8.2</span>  <span class="mf">0.999665</span>
+<span class="mf">8.25</span>  <span class="mf">0.999681</span>
+<span class="mf">8.3</span>  <span class="mf">0.999696</span>
+<span class="mf">8.35</span>  <span class="mf">0.999711</span>
+<span class="mf">8.4</span>  <span class="mf">0.999724</span>
+<span class="mf">8.45</span>  <span class="mf">0.999738</span>
+<span class="mf">8.5</span>  <span class="mf">0.99975</span>
+<span class="mf">8.55</span>  <span class="mf">0.999762</span>
+<span class="mf">8.6</span>  <span class="mf">0.999773</span>
+<span class="mf">8.65</span>  <span class="mf">0.999784</span>
+<span class="mf">8.7</span>  <span class="mf">0.999794</span>
+<span class="mf">8.75</span>  <span class="mf">0.999804</span>
+<span class="mf">8.8</span>  <span class="mf">0.999813</span>
+<span class="mf">8.85</span>  <span class="mf">0.999822</span>
+<span class="mf">8.9</span>  <span class="mf">0.999831</span>
+<span class="mf">8.95</span>  <span class="mf">0.999839</span>
+<span class="mi">9</span>  <span class="mf">0.999847</span>
+<span class="mf">9.05</span>  <span class="mf">0.999854</span>
+<span class="mf">9.1</span>  <span class="mf">0.999861</span>
+<span class="mf">9.15</span>  <span class="mf">0.999867</span>
+<span class="mf">9.2</span>  <span class="mf">0.999874</span>
+<span class="mf">9.25</span>  <span class="mf">0.99988</span>
+<span class="mf">9.3</span>  <span class="mf">0.999886</span>
+<span class="mf">9.35</span>  <span class="mf">0.999891</span>
+<span class="mf">9.4</span>  <span class="mf">0.999896</span>
+<span class="mf">9.45</span>  <span class="mf">0.999901</span>
+<span class="mf">9.5</span>  <span class="mf">0.999906</span>
+<span class="mf">9.55</span>  <span class="mf">0.99991</span>
+<span class="mf">9.6</span>  <span class="mf">0.999915</span>
+<span class="mf">9.65</span>  <span class="mf">0.999919</span>
+<span class="mf">9.7</span>  <span class="mf">0.999923</span>
+<span class="mf">9.75</span>  <span class="mf">0.999926</span>
+<span class="mf">9.8</span>  <span class="mf">0.99993</span>
+<span class="mf">9.85</span>  <span class="mf">0.999933</span>
+<span class="mf">9.9</span>  <span class="mf">0.999936</span>
+<span class="mf">9.95</span>  <span class="mf">0.999939</span>
+<span class="mi">10</span>  <span class="mf">0.999942</span>
+</pre></div>
+</div>
+</details>
+<details>
+<summary>Improved Euler</summary>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span>    <span class="n">u</span>
+<span class="mi">0</span>  <span class="mi">0</span>
+<span class="mf">0.05</span>  <span class="mf">0.04875</span>
+<span class="mf">0.1</span>  <span class="mf">0.0951234</span>
+<span class="mf">0.15</span>  <span class="mf">0.139236</span>
+<span class="mf">0.2</span>  <span class="mf">0.181198</span>
+<span class="mf">0.25</span>  <span class="mf">0.221115</span>
+<span class="mf">0.3</span>  <span class="mf">0.259086</span>
+<span class="mf">0.35</span>  <span class="mf">0.295205</span>
+<span class="mf">0.4</span>  <span class="mf">0.329564</span>
+<span class="mf">0.45</span>  <span class="mf">0.362248</span>
+<span class="mf">0.5</span>  <span class="mf">0.393338</span>
+<span class="mf">0.55</span>  <span class="mf">0.422913</span>
+<span class="mf">0.6</span>  <span class="mf">0.451046</span>
+<span class="mf">0.65</span>  <span class="mf">0.477807</span>
+<span class="mf">0.7</span>  <span class="mf">0.503264</span>
+<span class="mf">0.75</span>  <span class="mf">0.52748</span>
+<span class="mf">0.8</span>  <span class="mf">0.550516</span>
+<span class="mf">0.85</span>  <span class="mf">0.572428</span>
+<span class="mf">0.9</span>  <span class="mf">0.593272</span>
+<span class="mf">0.95</span>  <span class="mf">0.6131</span>
+<span class="mi">1</span>  <span class="mf">0.631961</span>
+<span class="mf">1.05</span>  <span class="mf">0.649903</span>
+<span class="mf">1.1</span>  <span class="mf">0.66697</span>
+<span class="mf">1.15</span>  <span class="mf">0.683206</span>
+<span class="mf">1.2</span>  <span class="mf">0.698649</span>
+<span class="mf">1.25</span>  <span class="mf">0.71334</span>
+<span class="mf">1.3</span>  <span class="mf">0.727315</span>
+<span class="mf">1.35</span>  <span class="mf">0.740608</span>
+<span class="mf">1.4</span>  <span class="mf">0.753254</span>
+<span class="mf">1.45</span>  <span class="mf">0.765283</span>
+<span class="mf">1.5</span>  <span class="mf">0.776725</span>
+<span class="mf">1.55</span>  <span class="mf">0.78761</span>
+<span class="mf">1.6</span>  <span class="mf">0.797964</span>
+<span class="mf">1.65</span>  <span class="mf">0.807813</span>
+<span class="mf">1.7</span>  <span class="mf">0.817182</span>
+<span class="mf">1.75</span>  <span class="mf">0.826094</span>
+<span class="mf">1.8</span>  <span class="mf">0.834572</span>
+<span class="mf">1.85</span>  <span class="mf">0.842637</span>
+<span class="mf">1.9</span>  <span class="mf">0.850308</span>
+<span class="mf">1.95</span>  <span class="mf">0.857606</span>
+<span class="mi">2</span>  <span class="mf">0.864548</span>
+<span class="mf">2.05</span>  <span class="mf">0.871151</span>
+<span class="mf">2.1</span>  <span class="mf">0.877432</span>
+<span class="mf">2.15</span>  <span class="mf">0.883407</span>
+<span class="mf">2.2</span>  <span class="mf">0.889091</span>
+<span class="mf">2.25</span>  <span class="mf">0.894498</span>
+<span class="mf">2.3</span>  <span class="mf">0.899641</span>
+<span class="mf">2.35</span>  <span class="mf">0.904534</span>
+<span class="mf">2.4</span>  <span class="mf">0.909188</span>
+<span class="mf">2.45</span>  <span class="mf">0.913615</span>
+<span class="mf">2.5</span>  <span class="mf">0.917826</span>
+<span class="mf">2.55</span>  <span class="mf">0.921832</span>
+<span class="mf">2.6</span>  <span class="mf">0.925643</span>
+<span class="mf">2.65</span>  <span class="mf">0.929268</span>
+<span class="mf">2.7</span>  <span class="mf">0.932716</span>
+<span class="mf">2.75</span>  <span class="mf">0.935996</span>
+<span class="mf">2.8</span>  <span class="mf">0.939116</span>
+<span class="mf">2.85</span>  <span class="mf">0.942084</span>
+<span class="mf">2.9</span>  <span class="mf">0.944908</span>
+<span class="mf">2.95</span>  <span class="mf">0.947593</span>
+<span class="mi">3</span>  <span class="mf">0.950148</span>
+<span class="mf">3.05</span>  <span class="mf">0.952579</span>
+<span class="mf">3.1</span>  <span class="mf">0.95489</span>
+<span class="mf">3.15</span>  <span class="mf">0.957089</span>
+<span class="mf">3.2</span>  <span class="mf">0.959181</span>
+<span class="mf">3.25</span>  <span class="mf">0.961171</span>
+<span class="mf">3.3</span>  <span class="mf">0.963064</span>
+<span class="mf">3.35</span>  <span class="mf">0.964865</span>
+<span class="mf">3.4</span>  <span class="mf">0.966578</span>
+<span class="mf">3.45</span>  <span class="mf">0.968207</span>
+<span class="mf">3.5</span>  <span class="mf">0.969757</span>
+<span class="mf">3.55</span>  <span class="mf">0.971231</span>
+<span class="mf">3.6</span>  <span class="mf">0.972634</span>
+<span class="mf">3.65</span>  <span class="mf">0.973968</span>
+<span class="mf">3.7</span>  <span class="mf">0.975237</span>
+<span class="mf">3.75</span>  <span class="mf">0.976444</span>
+<span class="mf">3.8</span>  <span class="mf">0.977592</span>
+<span class="mf">3.85</span>  <span class="mf">0.978685</span>
+<span class="mf">3.9</span>  <span class="mf">0.979724</span>
+<span class="mf">3.95</span>  <span class="mf">0.980712</span>
+<span class="mi">4</span>  <span class="mf">0.981653</span>
+<span class="mf">4.05</span>  <span class="mf">0.982547</span>
+<span class="mf">4.1</span>  <span class="mf">0.983398</span>
+<span class="mf">4.15</span>  <span class="mf">0.984207</span>
+<span class="mf">4.2</span>  <span class="mf">0.984977</span>
+<span class="mf">4.25</span>  <span class="mf">0.98571</span>
+<span class="mf">4.3</span>  <span class="mf">0.986406</span>
+<span class="mf">4.35</span>  <span class="mf">0.987069</span>
+<span class="mf">4.4</span>  <span class="mf">0.987699</span>
+<span class="mf">4.45</span>  <span class="mf">0.988299</span>
+<span class="mf">4.5</span>  <span class="mf">0.988869</span>
+<span class="mf">4.55</span>  <span class="mf">0.989412</span>
+<span class="mf">4.6</span>  <span class="mf">0.989928</span>
+<span class="mf">4.65</span>  <span class="mf">0.990419</span>
+<span class="mf">4.7</span>  <span class="mf">0.990886</span>
+<span class="mf">4.75</span>  <span class="mf">0.991331</span>
+<span class="mf">4.8</span>  <span class="mf">0.991753</span>
+<span class="mf">4.85</span>  <span class="mf">0.992155</span>
+<span class="mf">4.9</span>  <span class="mf">0.992538</span>
+<span class="mf">4.95</span>  <span class="mf">0.992901</span>
+<span class="mi">5</span>  <span class="mf">0.993247</span>
+<span class="mf">5.05</span>  <span class="mf">0.993577</span>
+<span class="mf">5.1</span>  <span class="mf">0.99389</span>
+<span class="mf">5.15</span>  <span class="mf">0.994188</span>
+<span class="mf">5.2</span>  <span class="mf">0.994471</span>
+<span class="mf">5.25</span>  <span class="mf">0.994741</span>
+<span class="mf">5.3</span>  <span class="mf">0.994997</span>
+<span class="mf">5.35</span>  <span class="mf">0.995241</span>
+<span class="mf">5.4</span>  <span class="mf">0.995473</span>
+<span class="mf">5.45</span>  <span class="mf">0.995694</span>
+<span class="mf">5.5</span>  <span class="mf">0.995903</span>
+<span class="mf">5.55</span>  <span class="mf">0.996103</span>
+<span class="mf">5.6</span>  <span class="mf">0.996293</span>
+<span class="mf">5.65</span>  <span class="mf">0.996474</span>
+<span class="mf">5.7</span>  <span class="mf">0.996646</span>
+<span class="mf">5.75</span>  <span class="mf">0.996809</span>
+<span class="mf">5.8</span>  <span class="mf">0.996965</span>
+<span class="mf">5.85</span>  <span class="mf">0.997113</span>
+<span class="mf">5.9</span>  <span class="mf">0.997254</span>
+<span class="mf">5.95</span>  <span class="mf">0.997387</span>
+<span class="mi">6</span>  <span class="mf">0.997515</span>
+<span class="mf">6.05</span>  <span class="mf">0.997636</span>
+<span class="mf">6.1</span>  <span class="mf">0.997751</span>
+<span class="mf">6.15</span>  <span class="mf">0.997861</span>
+<span class="mf">6.2</span>  <span class="mf">0.997965</span>
+<span class="mf">6.25</span>  <span class="mf">0.998064</span>
+<span class="mf">6.3</span>  <span class="mf">0.998159</span>
+<span class="mf">6.35</span>  <span class="mf">0.998248</span>
+<span class="mf">6.4</span>  <span class="mf">0.998334</span>
+<span class="mf">6.45</span>  <span class="mf">0.998415</span>
+<span class="mf">6.5</span>  <span class="mf">0.998492</span>
+<span class="mf">6.55</span>  <span class="mf">0.998566</span>
+<span class="mf">6.6</span>  <span class="mf">0.998636</span>
+<span class="mf">6.65</span>  <span class="mf">0.998702</span>
+<span class="mf">6.7</span>  <span class="mf">0.998766</span>
+<span class="mf">6.75</span>  <span class="mf">0.998826</span>
+<span class="mf">6.8</span>  <span class="mf">0.998883</span>
+<span class="mf">6.85</span>  <span class="mf">0.998937</span>
+<span class="mf">6.9</span>  <span class="mf">0.998989</span>
+<span class="mf">6.95</span>  <span class="mf">0.999038</span>
+<span class="mi">7</span>  <span class="mf">0.999085</span>
+<span class="mf">7.05</span>  <span class="mf">0.99913</span>
+<span class="mf">7.1</span>  <span class="mf">0.999172</span>
+<span class="mf">7.15</span>  <span class="mf">0.999213</span>
+<span class="mf">7.2</span>  <span class="mf">0.999251</span>
+<span class="mf">7.25</span>  <span class="mf">0.999288</span>
+<span class="mf">7.3</span>  <span class="mf">0.999322</span>
+<span class="mf">7.35</span>  <span class="mf">0.999355</span>
+<span class="mf">7.4</span>  <span class="mf">0.999387</span>
+<span class="mf">7.45</span>  <span class="mf">0.999417</span>
+<span class="mf">7.5</span>  <span class="mf">0.999445</span>
+<span class="mf">7.55</span>  <span class="mf">0.999472</span>
+<span class="mf">7.6</span>  <span class="mf">0.999498</span>
+<span class="mf">7.65</span>  <span class="mf">0.999522</span>
+<span class="mf">7.7</span>  <span class="mf">0.999546</span>
+<span class="mf">7.75</span>  <span class="mf">0.999568</span>
+<span class="mf">7.8</span>  <span class="mf">0.999589</span>
+<span class="mf">7.85</span>  <span class="mf">0.999609</span>
+<span class="mf">7.9</span>  <span class="mf">0.999628</span>
+<span class="mf">7.95</span>  <span class="mf">0.999646</span>
+<span class="mi">8</span>  <span class="mf">0.999663</span>
+<span class="mf">8.05</span>  <span class="mf">0.99968</span>
+<span class="mf">8.1</span>  <span class="mf">0.999695</span>
+<span class="mf">8.15</span>  <span class="mf">0.99971</span>
+<span class="mf">8.2</span>  <span class="mf">0.999724</span>
+<span class="mf">8.25</span>  <span class="mf">0.999738</span>
+<span class="mf">8.3</span>  <span class="mf">0.999751</span>
+<span class="mf">8.35</span>  <span class="mf">0.999763</span>
+<span class="mf">8.4</span>  <span class="mf">0.999774</span>
+<span class="mf">8.45</span>  <span class="mf">0.999785</span>
+<span class="mf">8.5</span>  <span class="mf">0.999796</span>
+<span class="mf">8.55</span>  <span class="mf">0.999806</span>
+<span class="mf">8.6</span>  <span class="mf">0.999815</span>
+<span class="mf">8.65</span>  <span class="mf">0.999824</span>
+<span class="mf">8.7</span>  <span class="mf">0.999833</span>
+<span class="mf">8.75</span>  <span class="mf">0.999841</span>
+<span class="mf">8.8</span>  <span class="mf">0.999849</span>
+<span class="mf">8.85</span>  <span class="mf">0.999856</span>
+<span class="mf">8.9</span>  <span class="mf">0.999863</span>
+<span class="mf">8.95</span>  <span class="mf">0.99987</span>
+<span class="mi">9</span>  <span class="mf">0.999876</span>
+<span class="mf">9.05</span>  <span class="mf">0.999882</span>
+<span class="mf">9.1</span>  <span class="mf">0.999888</span>
+<span class="mf">9.15</span>  <span class="mf">0.999893</span>
+<span class="mf">9.2</span>  <span class="mf">0.999899</span>
+<span class="mf">9.25</span>  <span class="mf">0.999904</span>
+<span class="mf">9.3</span>  <span class="mf">0.999908</span>
+<span class="mf">9.35</span>  <span class="mf">0.999913</span>
+<span class="mf">9.4</span>  <span class="mf">0.999917</span>
+<span class="mf">9.45</span>  <span class="mf">0.999921</span>
+<span class="mf">9.5</span>  <span class="mf">0.999925</span>
+<span class="mf">9.55</span>  <span class="mf">0.999929</span>
+<span class="mf">9.6</span>  <span class="mf">0.999932</span>
+<span class="mf">9.65</span>  <span class="mf">0.999935</span>
+<span class="mf">9.7</span>  <span class="mf">0.999938</span>
+<span class="mf">9.75</span>  <span class="mf">0.999941</span>
+<span class="mf">9.8</span>  <span class="mf">0.999944</span>
+<span class="mf">9.85</span>  <span class="mf">0.999947</span>
+<span class="mf">9.9</span>  <span class="mf">0.99995</span>
+<span class="mf">9.95</span>  <span class="mf">0.999952</span>
+<span class="mi">10</span>  <span class="mf">0.999954</span>
+</pre></div>
+</div>
+</details>
+</section>
+<section id="case-2-r-2-c-0-5-e0-1-5-u0-0-5-tend-8-steps-120-0-0667">
+<h3>Case 2 — R=2, C=0.5, E0=1.5, u0=0.5, tend=8, steps=120 (τ≈0.0667)<a class="headerlink" href="#case-2-r-2-c-0-5-e0-1-5-u0-0-5-tend-8-steps-120-0-0667" title="Link to this heading">#</a></h3>
+<details>
+<summary>Explicit Euler</summary>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span>    <span class="n">u</span>
+<span class="mi">0</span>  <span class="mf">0.5</span>
+<span class="mf">0.0666667</span>  <span class="mf">0.566667</span>
+<span class="mf">0.133333</span>  <span class="mf">0.628889</span>
+<span class="mf">0.2</span>  <span class="mf">0.686963</span>
+<span class="mf">0.266667</span>  <span class="mf">0.741165</span>
+<span class="mf">0.333333</span>  <span class="mf">0.791754</span>
+<span class="mf">0.4</span>  <span class="mf">0.838971</span>
+<span class="mf">0.466667</span>  <span class="mf">0.883039</span>
+<span class="mf">0.533333</span>  <span class="mf">0.92417</span>
+<span class="mf">0.6</span>  <span class="mf">0.962559</span>
+<span class="mf">0.666667</span>  <span class="mf">0.998388</span>
+<span class="mf">0.733333</span>  <span class="mf">1.03183</span>
+<span class="mf">0.8</span>  <span class="mf">1.06304</span>
+<span class="mf">0.866667</span>  <span class="mf">1.09217</span>
+<span class="mf">0.933333</span>  <span class="mf">1.11936</span>
+<span class="mi">1</span>  <span class="mf">1.14474</span>
+<span class="mf">1.06667</span>  <span class="mf">1.16842</span>
+<span class="mf">1.13333</span>  <span class="mf">1.19053</span>
+<span class="mf">1.2</span>  <span class="mf">1.21116</span>
+<span class="mf">1.26667</span>  <span class="mf">1.23041</span>
+<span class="mf">1.33333</span>  <span class="mf">1.24839</span>
+<span class="mf">1.4</span>  <span class="mf">1.26516</span>
+<span class="mf">1.46667</span>  <span class="mf">1.28082</span>
+<span class="mf">1.53333</span>  <span class="mf">1.29543</span>
+<span class="mf">1.6</span>  <span class="mf">1.30907</span>
+<span class="mf">1.66667</span>  <span class="mf">1.3218</span>
+<span class="mf">1.73333</span>  <span class="mf">1.33368</span>
+<span class="mf">1.8</span>  <span class="mf">1.34476</span>
+<span class="mf">1.86667</span>  <span class="mf">1.35511</span>
+<span class="mf">1.93333</span>  <span class="mf">1.36477</span>
+<span class="mi">2</span>  <span class="mf">1.37379</span>
+<span class="mf">2.06667</span>  <span class="mf">1.3822</span>
+<span class="mf">2.13333</span>  <span class="mf">1.39005</span>
+<span class="mf">2.2</span>  <span class="mf">1.39738</span>
+<span class="mf">2.26667</span>  <span class="mf">1.40423</span>
+<span class="mf">2.33333</span>  <span class="mf">1.41061</span>
+<span class="mf">2.4</span>  <span class="mf">1.41657</span>
+<span class="mf">2.46667</span>  <span class="mf">1.42213</span>
+<span class="mf">2.53333</span>  <span class="mf">1.42732</span>
+<span class="mf">2.6</span>  <span class="mf">1.43217</span>
+<span class="mf">2.66667</span>  <span class="mf">1.43669</span>
+<span class="mf">2.73333</span>  <span class="mf">1.44091</span>
+<span class="mf">2.8</span>  <span class="mf">1.44485</span>
+<span class="mf">2.86667</span>  <span class="mf">1.44853</span>
+<span class="mf">2.93333</span>  <span class="mf">1.45196</span>
+<span class="mi">3</span>  <span class="mf">1.45516</span>
+<span class="mf">3.06667</span>  <span class="mf">1.45815</span>
+<span class="mf">3.13333</span>  <span class="mf">1.46094</span>
+<span class="mf">3.2</span>  <span class="mf">1.46354</span>
+<span class="mf">3.26667</span>  <span class="mf">1.46597</span>
+<span class="mf">3.33333</span>  <span class="mf">1.46824</span>
+<span class="mf">3.4</span>  <span class="mf">1.47036</span>
+<span class="mf">3.46667</span>  <span class="mf">1.47234</span>
+<span class="mf">3.53333</span>  <span class="mf">1.47418</span>
+<span class="mf">3.6</span>  <span class="mf">1.4759</span>
+<span class="mf">3.66667</span>  <span class="mf">1.47751</span>
+<span class="mf">3.73333</span>  <span class="mf">1.47901</span>
+<span class="mf">3.8</span>  <span class="mf">1.48041</span>
+<span class="mf">3.86667</span>  <span class="mf">1.48171</span>
+<span class="mf">3.93333</span>  <span class="mf">1.48293</span>
+<span class="mi">4</span>  <span class="mf">1.48407</span>
+<span class="mf">4.06667</span>  <span class="mf">1.48513</span>
+<span class="mf">4.13333</span>  <span class="mf">1.48612</span>
+<span class="mf">4.2</span>  <span class="mf">1.48705</span>
+<span class="mf">4.26667</span>  <span class="mf">1.48791</span>
+<span class="mf">4.33333</span>  <span class="mf">1.48872</span>
+<span class="mf">4.4</span>  <span class="mf">1.48947</span>
+<span class="mf">4.46667</span>  <span class="mf">1.49017</span>
+<span class="mf">4.53333</span>  <span class="mf">1.49083</span>
+<span class="mf">4.6</span>  <span class="mf">1.49144</span>
+<span class="mf">4.66667</span>  <span class="mf">1.49201</span>
+<span class="mf">4.73333</span>  <span class="mf">1.49254</span>
+<span class="mf">4.8</span>  <span class="mf">1.49304</span>
+<span class="mf">4.86667</span>  <span class="mf">1.4935</span>
+<span class="mf">4.93333</span>  <span class="mf">1.49394</span>
+<span class="mi">5</span>  <span class="mf">1.49434</span>
+<span class="mf">5.06667</span>  <span class="mf">1.49472</span>
+<span class="mf">5.13333</span>  <span class="mf">1.49507</span>
+<span class="mf">5.2</span>  <span class="mf">1.4954</span>
+<span class="mf">5.26667</span>  <span class="mf">1.49571</span>
+<span class="mf">5.33333</span>  <span class="mf">1.49599</span>
+<span class="mf">5.4</span>  <span class="mf">1.49626</span>
+<span class="mf">5.46667</span>  <span class="mf">1.49651</span>
+<span class="mf">5.53333</span>  <span class="mf">1.49674</span>
+<span class="mf">5.6</span>  <span class="mf">1.49696</span>
+<span class="mf">5.66667</span>  <span class="mf">1.49716</span>
+<span class="mf">5.73333</span>  <span class="mf">1.49735</span>
+<span class="mf">5.8</span>  <span class="mf">1.49753</span>
+<span class="mf">5.86667</span>  <span class="mf">1.49769</span>
+<span class="mf">5.93333</span>  <span class="mf">1.49785</span>
+<span class="mi">6</span>  <span class="mf">1.49799</span>
+<span class="mf">6.06667</span>  <span class="mf">1.49812</span>
+<span class="mf">6.13333</span>  <span class="mf">1.49825</span>
+<span class="mf">6.2</span>  <span class="mf">1.49837</span>
+<span class="mf">6.26667</span>  <span class="mf">1.49847</span>
+<span class="mf">6.33333</span>  <span class="mf">1.49858</span>
+<span class="mf">6.4</span>  <span class="mf">1.49867</span>
+<span class="mf">6.46667</span>  <span class="mf">1.49876</span>
+<span class="mf">6.53333</span>  <span class="mf">1.49884</span>
+<span class="mf">6.6</span>  <span class="mf">1.49892</span>
+<span class="mf">6.66667</span>  <span class="mf">1.49899</span>
+<span class="mf">6.73333</span>  <span class="mf">1.49906</span>
+<span class="mf">6.8</span>  <span class="mf">1.49912</span>
+<span class="mf">6.86667</span>  <span class="mf">1.49918</span>
+<span class="mf">6.93333</span>  <span class="mf">1.49923</span>
+<span class="mi">7</span>  <span class="mf">1.49929</span>
+<span class="mf">7.06667</span>  <span class="mf">1.49933</span>
+<span class="mf">7.13333</span>  <span class="mf">1.49938</span>
+<span class="mf">7.2</span>  <span class="mf">1.49942</span>
+<span class="mf">7.26667</span>  <span class="mf">1.49946</span>
+<span class="mf">7.33333</span>  <span class="mf">1.49949</span>
+<span class="mf">7.4</span>  <span class="mf">1.49953</span>
+<span class="mf">7.46667</span>  <span class="mf">1.49956</span>
+<span class="mf">7.53333</span>  <span class="mf">1.49959</span>
+<span class="mf">7.6</span>  <span class="mf">1.49962</span>
+<span class="mf">7.66667</span>  <span class="mf">1.49964</span>
+<span class="mf">7.73333</span>  <span class="mf">1.49967</span>
+<span class="mf">7.8</span>  <span class="mf">1.49969</span>
+<span class="mf">7.86667</span>  <span class="mf">1.49971</span>
+<span class="mf">7.93333</span>  <span class="mf">1.49973</span>
+<span class="mi">8</span>  <span class="mf">1.49975</span>
+</pre></div>
+</div>
+</details>
+<details>
+<summary>Implicit Euler</summary>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span>    <span class="n">u</span>
+<span class="mi">0</span>  <span class="mf">0.5</span>
+<span class="mf">0.0666667</span>  <span class="mf">0.5625</span>
+<span class="mf">0.133333</span>  <span class="mf">0.621094</span>
+<span class="mf">0.2</span>  <span class="mf">0.676025</span>
+<span class="mf">0.266667</span>  <span class="mf">0.727524</span>
+<span class="mf">0.333333</span>  <span class="mf">0.775804</span>
+<span class="mf">0.4</span>  <span class="mf">0.821066</span>
+<span class="mf">0.466667</span>  <span class="mf">0.863499</span>
+<span class="mf">0.533333</span>  <span class="mf">0.903281</span>
+<span class="mf">0.6</span>  <span class="mf">0.940575</span>
+<span class="mf">0.666667</span>  <span class="mf">0.97554</span>
+<span class="mf">0.733333</span>  <span class="mf">1.00832</span>
+<span class="mf">0.8</span>  <span class="mf">1.03905</span>
+<span class="mf">0.866667</span>  <span class="mf">1.06786</span>
+<span class="mf">0.933333</span>  <span class="mf">1.09487</span>
+<span class="mi">1</span>  <span class="mf">1.12019</span>
+<span class="mf">1.06667</span>  <span class="mf">1.14393</span>
+<span class="mf">1.13333</span>  <span class="mf">1.16618</span>
+<span class="mf">1.2</span>  <span class="mf">1.18704</span>
+<span class="mf">1.26667</span>  <span class="mf">1.2066</span>
+<span class="mf">1.33333</span>  <span class="mf">1.22494</span>
+<span class="mf">1.4</span>  <span class="mf">1.24213</span>
+<span class="mf">1.46667</span>  <span class="mf">1.25825</span>
+<span class="mf">1.53333</span>  <span class="mf">1.27336</span>
+<span class="mf">1.6</span>  <span class="mf">1.28752</span>
+<span class="mf">1.66667</span>  <span class="mf">1.3008</span>
+<span class="mf">1.73333</span>  <span class="mf">1.31325</span>
+<span class="mf">1.8</span>  <span class="mf">1.32492</span>
+<span class="mf">1.86667</span>  <span class="mf">1.33587</span>
+<span class="mf">1.93333</span>  <span class="mf">1.34613</span>
+<span class="mi">2</span>  <span class="mf">1.35574</span>
+<span class="mf">2.06667</span>  <span class="mf">1.36476</span>
+<span class="mf">2.13333</span>  <span class="mf">1.37321</span>
+<span class="mf">2.2</span>  <span class="mf">1.38114</span>
+<span class="mf">2.26667</span>  <span class="mf">1.38856</span>
+<span class="mf">2.33333</span>  <span class="mf">1.39553</span>
+<span class="mf">2.4</span>  <span class="mf">1.40206</span>
+<span class="mf">2.46667</span>  <span class="mf">1.40818</span>
+<span class="mf">2.53333</span>  <span class="mf">1.41392</span>
+<span class="mf">2.6</span>  <span class="mf">1.4193</span>
+<span class="mf">2.66667</span>  <span class="mf">1.42434</span>
+<span class="mf">2.73333</span>  <span class="mf">1.42907</span>
+<span class="mf">2.8</span>  <span class="mf">1.4335</span>
+<span class="mf">2.86667</span>  <span class="mf">1.43766</span>
+<span class="mf">2.93333</span>  <span class="mf">1.44156</span>
+<span class="mi">3</span>  <span class="mf">1.44521</span>
+<span class="mf">3.06667</span>  <span class="mf">1.44863</span>
+<span class="mf">3.13333</span>  <span class="mf">1.45184</span>
+<span class="mf">3.2</span>  <span class="mf">1.45485</span>
+<span class="mf">3.26667</span>  <span class="mf">1.45768</span>
+<span class="mf">3.33333</span>  <span class="mf">1.46032</span>
+<span class="mf">3.4</span>  <span class="mf">1.4628</span>
+<span class="mf">3.46667</span>  <span class="mf">1.46513</span>
+<span class="mf">3.53333</span>  <span class="mf">1.46731</span>
+<span class="mf">3.6</span>  <span class="mf">1.46935</span>
+<span class="mf">3.66667</span>  <span class="mf">1.47126</span>
+<span class="mf">3.73333</span>  <span class="mf">1.47306</span>
+<span class="mf">3.8</span>  <span class="mf">1.47474</span>
+<span class="mf">3.86667</span>  <span class="mf">1.47632</span>
+<span class="mf">3.93333</span>  <span class="mf">1.4778</span>
+<span class="mi">4</span>  <span class="mf">1.47919</span>
+<span class="mf">4.06667</span>  <span class="mf">1.48049</span>
+<span class="mf">4.13333</span>  <span class="mf">1.48171</span>
+<span class="mf">4.2</span>  <span class="mf">1.48285</span>
+<span class="mf">4.26667</span>  <span class="mf">1.48392</span>
+<span class="mf">4.33333</span>  <span class="mf">1.48493</span>
+<span class="mf">4.4</span>  <span class="mf">1.48587</span>
+<span class="mf">4.46667</span>  <span class="mf">1.48675</span>
+<span class="mf">4.53333</span>  <span class="mf">1.48758</span>
+<span class="mf">4.6</span>  <span class="mf">1.48836</span>
+<span class="mf">4.66667</span>  <span class="mf">1.48909</span>
+<span class="mf">4.73333</span>  <span class="mf">1.48977</span>
+<span class="mf">4.8</span>  <span class="mf">1.49041</span>
+<span class="mf">4.86667</span>  <span class="mf">1.49101</span>
+<span class="mf">4.93333</span>  <span class="mf">1.49157</span>
+<span class="mi">5</span>  <span class="mf">1.4921</span>
+<span class="mf">5.06667</span>  <span class="mf">1.49259</span>
+<span class="mf">5.13333</span>  <span class="mf">1.49305</span>
+<span class="mf">5.2</span>  <span class="mf">1.49349</span>
+<span class="mf">5.26667</span>  <span class="mf">1.49389</span>
+<span class="mf">5.33333</span>  <span class="mf">1.49428</span>
+<span class="mf">5.4</span>  <span class="mf">1.49463</span>
+<span class="mf">5.46667</span>  <span class="mf">1.49497</span>
+<span class="mf">5.53333</span>  <span class="mf">1.49528</span>
+<span class="mf">5.6</span>  <span class="mf">1.49558</span>
+<span class="mf">5.66667</span>  <span class="mf">1.49585</span>
+<span class="mf">5.73333</span>  <span class="mf">1.49611</span>
+<span class="mf">5.8</span>  <span class="mf">1.49636</span>
+<span class="mf">5.86667</span>  <span class="mf">1.49658</span>
+<span class="mf">5.93333</span>  <span class="mf">1.4968</span>
+<span class="mi">6</span>  <span class="mf">1.497</span>
+<span class="mf">6.06667</span>  <span class="mf">1.49719</span>
+<span class="mf">6.13333</span>  <span class="mf">1.49736</span>
+<span class="mf">6.2</span>  <span class="mf">1.49753</span>
+<span class="mf">6.26667</span>  <span class="mf">1.49768</span>
+<span class="mf">6.33333</span>  <span class="mf">1.49783</span>
+<span class="mf">6.4</span>  <span class="mf">1.49796</span>
+<span class="mf">6.46667</span>  <span class="mf">1.49809</span>
+<span class="mf">6.53333</span>  <span class="mf">1.49821</span>
+<span class="mf">6.6</span>  <span class="mf">1.49832</span>
+<span class="mf">6.66667</span>  <span class="mf">1.49843</span>
+<span class="mf">6.73333</span>  <span class="mf">1.49852</span>
+<span class="mf">6.8</span>  <span class="mf">1.49862</span>
+<span class="mf">6.86667</span>  <span class="mf">1.4987</span>
+<span class="mf">6.93333</span>  <span class="mf">1.49878</span>
+<span class="mi">7</span>  <span class="mf">1.49886</span>
+<span class="mf">7.06667</span>  <span class="mf">1.49893</span>
+<span class="mf">7.13333</span>  <span class="mf">1.499</span>
+<span class="mf">7.2</span>  <span class="mf">1.49906</span>
+<span class="mf">7.26667</span>  <span class="mf">1.49912</span>
+<span class="mf">7.33333</span>  <span class="mf">1.49917</span>
+<span class="mf">7.4</span>  <span class="mf">1.49923</span>
+<span class="mf">7.46667</span>  <span class="mf">1.49927</span>
+<span class="mf">7.53333</span>  <span class="mf">1.49932</span>
+<span class="mf">7.6</span>  <span class="mf">1.49936</span>
+<span class="mf">7.66667</span>  <span class="mf">1.4994</span>
+<span class="mf">7.73333</span>  <span class="mf">1.49944</span>
+<span class="mf">7.8</span>  <span class="mf">1.49947</span>
+<span class="mf">7.86667</span>  <span class="mf">1.49951</span>
+<span class="mf">7.93333</span>  <span class="mf">1.49954</span>
+<span class="mi">8</span>  <span class="mf">1.49957</span>
+</pre></div>
+</div>
+</details>
+<details>
+<summary>Improved Euler</summary>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span>    <span class="n">u</span>
+<span class="mi">0</span>  <span class="mf">0.5</span>
+<span class="mf">0.0666667</span>  <span class="mf">0.564444</span>
+<span class="mf">0.133333</span>  <span class="mf">0.624736</span>
+<span class="mf">0.2</span>  <span class="mf">0.681142</span>
+<span class="mf">0.266667</span>  <span class="mf">0.733913</span>
+<span class="mf">0.333333</span>  <span class="mf">0.783283</span>
+<span class="mf">0.4</span>  <span class="mf">0.829471</span>
+<span class="mf">0.466667</span>  <span class="mf">0.872683</span>
+<span class="mf">0.533333</span>  <span class="mf">0.91311</span>
+<span class="mf">0.6</span>  <span class="mf">0.950932</span>
+<span class="mf">0.666667</span>  <span class="mf">0.986316</span>
+<span class="mf">0.733333</span>  <span class="mf">1.01942</span>
+<span class="mf">0.8</span>  <span class="mf">1.05039</span>
+<span class="mf">0.866667</span>  <span class="mf">1.07937</span>
+<span class="mf">0.933333</span>  <span class="mf">1.10647</span>
+<span class="mi">1</span>  <span class="mf">1.13183</span>
+<span class="mf">1.06667</span>  <span class="mf">1.15556</span>
+<span class="mf">1.13333</span>  <span class="mf">1.17776</span>
+<span class="mf">1.2</span>  <span class="mf">1.19852</span>
+<span class="mf">1.26667</span>  <span class="mf">1.21795</span>
+<span class="mf">1.33333</span>  <span class="mf">1.23613</span>
+<span class="mf">1.4</span>  <span class="mf">1.25313</span>
+<span class="mf">1.46667</span>  <span class="mf">1.26904</span>
+<span class="mf">1.53333</span>  <span class="mf">1.28393</span>
+<span class="mf">1.6</span>  <span class="mf">1.29785</span>
+<span class="mf">1.66667</span>  <span class="mf">1.31088</span>
+<span class="mf">1.73333</span>  <span class="mf">1.32307</span>
+<span class="mf">1.8</span>  <span class="mf">1.33447</span>
+<span class="mf">1.86667</span>  <span class="mf">1.34514</span>
+<span class="mf">1.93333</span>  <span class="mf">1.35512</span>
+<span class="mi">2</span>  <span class="mf">1.36445</span>
+<span class="mf">2.06667</span>  <span class="mf">1.37319</span>
+<span class="mf">2.13333</span>  <span class="mf">1.38136</span>
+<span class="mf">2.2</span>  <span class="mf">1.38901</span>
+<span class="mf">2.26667</span>  <span class="mf">1.39616</span>
+<span class="mf">2.33333</span>  <span class="mf">1.40285</span>
+<span class="mf">2.4</span>  <span class="mf">1.40911</span>
+<span class="mf">2.46667</span>  <span class="mf">1.41497</span>
+<span class="mf">2.53333</span>  <span class="mf">1.42045</span>
+<span class="mf">2.6</span>  <span class="mf">1.42558</span>
+<span class="mf">2.66667</span>  <span class="mf">1.43037</span>
+<span class="mf">2.73333</span>  <span class="mf">1.43486</span>
+<span class="mf">2.8</span>  <span class="mf">1.43906</span>
+<span class="mf">2.86667</span>  <span class="mf">1.44298</span>
+<span class="mf">2.93333</span>  <span class="mf">1.44666</span>
+<span class="mi">3</span>  <span class="mf">1.4501</span>
+<span class="mf">3.06667</span>  <span class="mf">1.45331</span>
+<span class="mf">3.13333</span>  <span class="mf">1.45632</span>
+<span class="mf">3.2</span>  <span class="mf">1.45914</span>
+<span class="mf">3.26667</span>  <span class="mf">1.46177</span>
+<span class="mf">3.33333</span>  <span class="mf">1.46423</span>
+<span class="mf">3.4</span>  <span class="mf">1.46654</span>
+<span class="mf">3.46667</span>  <span class="mf">1.46869</span>
+<span class="mf">3.53333</span>  <span class="mf">1.47071</span>
+<span class="mf">3.6</span>  <span class="mf">1.4726</span>
+<span class="mf">3.66667</span>  <span class="mf">1.47437</span>
+<span class="mf">3.73333</span>  <span class="mf">1.47602</span>
+<span class="mf">3.8</span>  <span class="mf">1.47756</span>
+<span class="mf">3.86667</span>  <span class="mf">1.47901</span>
+<span class="mf">3.93333</span>  <span class="mf">1.48036</span>
+<span class="mi">4</span>  <span class="mf">1.48163</span>
+<span class="mf">4.06667</span>  <span class="mf">1.48281</span>
+<span class="mf">4.13333</span>  <span class="mf">1.48392</span>
+<span class="mf">4.2</span>  <span class="mf">1.48496</span>
+<span class="mf">4.26667</span>  <span class="mf">1.48592</span>
+<span class="mf">4.33333</span>  <span class="mf">1.48683</span>
+<span class="mf">4.4</span>  <span class="mf">1.48768</span>
+<span class="mf">4.46667</span>  <span class="mf">1.48847</span>
+<span class="mf">4.53333</span>  <span class="mf">1.48922</span>
+<span class="mf">4.6</span>  <span class="mf">1.48991</span>
+<span class="mf">4.66667</span>  <span class="mf">1.49056</span>
+<span class="mf">4.73333</span>  <span class="mf">1.49117</span>
+<span class="mf">4.8</span>  <span class="mf">1.49174</span>
+<span class="mf">4.86667</span>  <span class="mf">1.49227</span>
+<span class="mf">4.93333</span>  <span class="mf">1.49277</span>
+<span class="mi">5</span>  <span class="mf">1.49324</span>
+<span class="mf">5.06667</span>  <span class="mf">1.49367</span>
+<span class="mf">5.13333</span>  <span class="mf">1.49408</span>
+<span class="mf">5.2</span>  <span class="mf">1.49446</span>
+<span class="mf">5.26667</span>  <span class="mf">1.49482</span>
+<span class="mf">5.33333</span>  <span class="mf">1.49515</span>
+<span class="mf">5.4</span>  <span class="mf">1.49546</span>
+<span class="mf">5.46667</span>  <span class="mf">1.49576</span>
+<span class="mf">5.53333</span>  <span class="mf">1.49603</span>
+<span class="mf">5.6</span>  <span class="mf">1.49629</span>
+<span class="mf">5.66667</span>  <span class="mf">1.49653</span>
+<span class="mf">5.73333</span>  <span class="mf">1.49675</span>
+<span class="mf">5.8</span>  <span class="mf">1.49696</span>
+<span class="mf">5.86667</span>  <span class="mf">1.49715</span>
+<span class="mf">5.93333</span>  <span class="mf">1.49734</span>
+<span class="mi">6</span>  <span class="mf">1.49751</span>
+<span class="mf">6.06667</span>  <span class="mf">1.49767</span>
+<span class="mf">6.13333</span>  <span class="mf">1.49782</span>
+<span class="mf">6.2</span>  <span class="mf">1.49796</span>
+<span class="mf">6.26667</span>  <span class="mf">1.49809</span>
+<span class="mf">6.33333</span>  <span class="mf">1.49822</span>
+<span class="mf">6.4</span>  <span class="mf">1.49833</span>
+<span class="mf">6.46667</span>  <span class="mf">1.49844</span>
+<span class="mf">6.53333</span>  <span class="mf">1.49854</span>
+<span class="mf">6.6</span>  <span class="mf">1.49863</span>
+<span class="mf">6.66667</span>  <span class="mf">1.49872</span>
+<span class="mf">6.73333</span>  <span class="mf">1.4988</span>
+<span class="mf">6.8</span>  <span class="mf">1.49888</span>
+<span class="mf">6.86667</span>  <span class="mf">1.49895</span>
+<span class="mf">6.93333</span>  <span class="mf">1.49902</span>
+<span class="mi">7</span>  <span class="mf">1.49908</span>
+<span class="mf">7.06667</span>  <span class="mf">1.49914</span>
+<span class="mf">7.13333</span>  <span class="mf">1.4992</span>
+<span class="mf">7.2</span>  <span class="mf">1.49925</span>
+<span class="mf">7.26667</span>  <span class="mf">1.4993</span>
+<span class="mf">7.33333</span>  <span class="mf">1.49934</span>
+<span class="mf">7.4</span>  <span class="mf">1.49939</span>
+<span class="mf">7.46667</span>  <span class="mf">1.49942</span>
+<span class="mf">7.53333</span>  <span class="mf">1.49946</span>
+<span class="mf">7.6</span>  <span class="mf">1.4995</span>
+<span class="mf">7.66667</span>  <span class="mf">1.49953</span>
+<span class="mf">7.73333</span>  <span class="mf">1.49956</span>
+<span class="mf">7.8</span>  <span class="mf">1.49959</span>
+<span class="mf">7.86667</span>  <span class="mf">1.49961</span>
+<span class="mf">7.93333</span>  <span class="mf">1.49964</span>
+<span class="mi">8</span>  <span class="mf">1.49966</span>
+</pre></div>
+</div>
+</details>
+</section>
+<section id="case-3-r-0-5-c-2-e0-0-8-u0-1-tend-12-steps-240-0-05">
+<h3>Case 3 — R=0.5, C=2, E0=0.8, u0=1, tend=12, steps=240 (τ=0.05)<a class="headerlink" href="#case-3-r-0-5-c-2-e0-0-8-u0-1-tend-12-steps-240-0-05" title="Link to this heading">#</a></h3>
+<details>
+<summary>Explicit Euler</summary>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span>    <span class="n">u</span>
+<span class="mi">0</span>  <span class="mi">1</span>
+<span class="mf">0.05</span>  <span class="mf">0.99</span>
+<span class="mf">0.1</span>  <span class="mf">0.9805</span>
+<span class="mf">0.15</span>  <span class="mf">0.971475</span>
+<span class="mf">0.2</span>  <span class="mf">0.962901</span>
+<span class="mf">0.25</span>  <span class="mf">0.954756</span>
+<span class="mf">0.3</span>  <span class="mf">0.947018</span>
+<span class="mf">0.35</span>  <span class="mf">0.939667</span>
+<span class="mf">0.4</span>  <span class="mf">0.932684</span>
+<span class="mf">0.45</span>  <span class="mf">0.92605</span>
+<span class="mf">0.5</span>  <span class="mf">0.919747</span>
+<span class="mf">0.55</span>  <span class="mf">0.91376</span>
+<span class="mf">0.6</span>  <span class="mf">0.908072</span>
+<span class="mf">0.65</span>  <span class="mf">0.902668</span>
+<span class="mf">0.7</span>  <span class="mf">0.897535</span>
+<span class="mf">0.75</span>  <span class="mf">0.892658</span>
+<span class="mf">0.8</span>  <span class="mf">0.888025</span>
+<span class="mf">0.85</span>  <span class="mf">0.883624</span>
+<span class="mf">0.9</span>  <span class="mf">0.879443</span>
+<span class="mf">0.95</span>  <span class="mf">0.875471</span>
+<span class="mi">1</span>  <span class="mf">0.871697</span>
+<span class="mf">1.05</span>  <span class="mf">0.868112</span>
+<span class="mf">1.1</span>  <span class="mf">0.864707</span>
+<span class="mf">1.15</span>  <span class="mf">0.861471</span>
+<span class="mf">1.2</span>  <span class="mf">0.858398</span>
+<span class="mf">1.25</span>  <span class="mf">0.855478</span>
+<span class="mf">1.3</span>  <span class="mf">0.852704</span>
+<span class="mf">1.35</span>  <span class="mf">0.850069</span>
+<span class="mf">1.4</span>  <span class="mf">0.847565</span>
+<span class="mf">1.45</span>  <span class="mf">0.845187</span>
+<span class="mf">1.5</span>  <span class="mf">0.842928</span>
+<span class="mf">1.55</span>  <span class="mf">0.840781</span>
+<span class="mf">1.6</span>  <span class="mf">0.838742</span>
+<span class="mf">1.65</span>  <span class="mf">0.836805</span>
+<span class="mf">1.7</span>  <span class="mf">0.834965</span>
+<span class="mf">1.75</span>  <span class="mf">0.833217</span>
+<span class="mf">1.8</span>  <span class="mf">0.831556</span>
+<span class="mf">1.85</span>  <span class="mf">0.829978</span>
+<span class="mf">1.9</span>  <span class="mf">0.828479</span>
+<span class="mf">1.95</span>  <span class="mf">0.827055</span>
+<span class="mi">2</span>  <span class="mf">0.825702</span>
+<span class="mf">2.05</span>  <span class="mf">0.824417</span>
+<span class="mf">2.1</span>  <span class="mf">0.823196</span>
+<span class="mf">2.15</span>  <span class="mf">0.822037</span>
+<span class="mf">2.2</span>  <span class="mf">0.820935</span>
+<span class="mf">2.25</span>  <span class="mf">0.819888</span>
+<span class="mf">2.3</span>  <span class="mf">0.818894</span>
+<span class="mf">2.35</span>  <span class="mf">0.817949</span>
+<span class="mf">2.4</span>  <span class="mf">0.817052</span>
+<span class="mf">2.45</span>  <span class="mf">0.816199</span>
+<span class="mf">2.5</span>  <span class="mf">0.815389</span>
+<span class="mf">2.55</span>  <span class="mf">0.81462</span>
+<span class="mf">2.6</span>  <span class="mf">0.813889</span>
+<span class="mf">2.65</span>  <span class="mf">0.813194</span>
+<span class="mf">2.7</span>  <span class="mf">0.812534</span>
+<span class="mf">2.75</span>  <span class="mf">0.811908</span>
+<span class="mf">2.8</span>  <span class="mf">0.811312</span>
+<span class="mf">2.85</span>  <span class="mf">0.810747</span>
+<span class="mf">2.9</span>  <span class="mf">0.810209</span>
+<span class="mf">2.95</span>  <span class="mf">0.809699</span>
+<span class="mi">3</span>  <span class="mf">0.809214</span>
+<span class="mf">3.05</span>  <span class="mf">0.808753</span>
+<span class="mf">3.1</span>  <span class="mf">0.808316</span>
+<span class="mf">3.15</span>  <span class="mf">0.8079</span>
+<span class="mf">3.2</span>  <span class="mf">0.807505</span>
+<span class="mf">3.25</span>  <span class="mf">0.80713</span>
+<span class="mf">3.3</span>  <span class="mf">0.806773</span>
+<span class="mf">3.35</span>  <span class="mf">0.806434</span>
+<span class="mf">3.4</span>  <span class="mf">0.806113</span>
+<span class="mf">3.45</span>  <span class="mf">0.805807</span>
+<span class="mf">3.5</span>  <span class="mf">0.805517</span>
+<span class="mf">3.55</span>  <span class="mf">0.805241</span>
+<span class="mf">3.6</span>  <span class="mf">0.804979</span>
+<span class="mf">3.65</span>  <span class="mf">0.80473</span>
+<span class="mf">3.7</span>  <span class="mf">0.804493</span>
+<span class="mf">3.75</span>  <span class="mf">0.804269</span>
+<span class="mf">3.8</span>  <span class="mf">0.804055</span>
+<span class="mf">3.85</span>  <span class="mf">0.803853</span>
+<span class="mf">3.9</span>  <span class="mf">0.80366</span>
+<span class="mf">3.95</span>  <span class="mf">0.803477</span>
+<span class="mi">4</span>  <span class="mf">0.803303</span>
+<span class="mf">4.05</span>  <span class="mf">0.803138</span>
+<span class="mf">4.1</span>  <span class="mf">0.802981</span>
+<span class="mf">4.15</span>  <span class="mf">0.802832</span>
+<span class="mf">4.2</span>  <span class="mf">0.80269</span>
+<span class="mf">4.25</span>  <span class="mf">0.802556</span>
+<span class="mf">4.3</span>  <span class="mf">0.802428</span>
+<span class="mf">4.35</span>  <span class="mf">0.802307</span>
+<span class="mf">4.4</span>  <span class="mf">0.802191</span>
+<span class="mf">4.45</span>  <span class="mf">0.802082</span>
+<span class="mf">4.5</span>  <span class="mf">0.801978</span>
+<span class="mf">4.55</span>  <span class="mf">0.801879</span>
+<span class="mf">4.6</span>  <span class="mf">0.801785</span>
+<span class="mf">4.65</span>  <span class="mf">0.801696</span>
+<span class="mf">4.7</span>  <span class="mf">0.801611</span>
+<span class="mf">4.75</span>  <span class="mf">0.80153</span>
+<span class="mf">4.8</span>  <span class="mf">0.801454</span>
+<span class="mf">4.85</span>  <span class="mf">0.801381</span>
+<span class="mf">4.9</span>  <span class="mf">0.801312</span>
+<span class="mf">4.95</span>  <span class="mf">0.801246</span>
+<span class="mi">5</span>  <span class="mf">0.801184</span>
+<span class="mf">5.05</span>  <span class="mf">0.801125</span>
+<span class="mf">5.1</span>  <span class="mf">0.801069</span>
+<span class="mf">5.15</span>  <span class="mf">0.801015</span>
+<span class="mf">5.2</span>  <span class="mf">0.800964</span>
+<span class="mf">5.25</span>  <span class="mf">0.800916</span>
+<span class="mf">5.3</span>  <span class="mf">0.80087</span>
+<span class="mf">5.35</span>  <span class="mf">0.800827</span>
+<span class="mf">5.4</span>  <span class="mf">0.800786</span>
+<span class="mf">5.45</span>  <span class="mf">0.800746</span>
+<span class="mf">5.5</span>  <span class="mf">0.800709</span>
+<span class="mf">5.55</span>  <span class="mf">0.800674</span>
+<span class="mf">5.6</span>  <span class="mf">0.80064</span>
+<span class="mf">5.65</span>  <span class="mf">0.800608</span>
+<span class="mf">5.7</span>  <span class="mf">0.800577</span>
+<span class="mf">5.75</span>  <span class="mf">0.800549</span>
+<span class="mf">5.8</span>  <span class="mf">0.800521</span>
+<span class="mf">5.85</span>  <span class="mf">0.800495</span>
+<span class="mf">5.9</span>  <span class="mf">0.80047</span>
+<span class="mf">5.95</span>  <span class="mf">0.800447</span>
+<span class="mi">6</span>  <span class="mf">0.800424</span>
+<span class="mf">6.05</span>  <span class="mf">0.800403</span>
+<span class="mf">6.1</span>  <span class="mf">0.800383</span>
+<span class="mf">6.15</span>  <span class="mf">0.800364</span>
+<span class="mf">6.2</span>  <span class="mf">0.800346</span>
+<span class="mf">6.25</span>  <span class="mf">0.800328</span>
+<span class="mf">6.3</span>  <span class="mf">0.800312</span>
+<span class="mf">6.35</span>  <span class="mf">0.800296</span>
+<span class="mf">6.4</span>  <span class="mf">0.800282</span>
+<span class="mf">6.45</span>  <span class="mf">0.800268</span>
+<span class="mf">6.5</span>  <span class="mf">0.800254</span>
+<span class="mf">6.55</span>  <span class="mf">0.800241</span>
+<span class="mf">6.6</span>  <span class="mf">0.800229</span>
+<span class="mf">6.65</span>  <span class="mf">0.800218</span>
+<span class="mf">6.7</span>  <span class="mf">0.800207</span>
+<span class="mf">6.75</span>  <span class="mf">0.800197</span>
+<span class="mf">6.8</span>  <span class="mf">0.800187</span>
+<span class="mf">6.85</span>  <span class="mf">0.800177</span>
+<span class="mf">6.9</span>  <span class="mf">0.800169</span>
+<span class="mf">6.95</span>  <span class="mf">0.80016</span>
+<span class="mi">7</span>  <span class="mf">0.800152</span>
+<span class="mf">7.05</span>  <span class="mf">0.800145</span>
+<span class="mf">7.1</span>  <span class="mf">0.800137</span>
+<span class="mf">7.15</span>  <span class="mf">0.80013</span>
+<span class="mf">7.2</span>  <span class="mf">0.800124</span>
+<span class="mf">7.25</span>  <span class="mf">0.800118</span>
+<span class="mf">7.3</span>  <span class="mf">0.800112</span>
+<span class="mf">7.35</span>  <span class="mf">0.800106</span>
+<span class="mf">7.4</span>  <span class="mf">0.800101</span>
+<span class="mf">7.45</span>  <span class="mf">0.800096</span>
+<span class="mf">7.5</span>  <span class="mf">0.800091</span>
+<span class="mf">7.55</span>  <span class="mf">0.800087</span>
+<span class="mf">7.6</span>  <span class="mf">0.800082</span>
+<span class="mf">7.65</span>  <span class="mf">0.800078</span>
+<span class="mf">7.7</span>  <span class="mf">0.800074</span>
+<span class="mf">7.75</span>  <span class="mf">0.80007</span>
+<span class="mf">7.8</span>  <span class="mf">0.800067</span>
+<span class="mf">7.85</span>  <span class="mf">0.800064</span>
+<span class="mf">7.9</span>  <span class="mf">0.80006</span>
+<span class="mf">7.95</span>  <span class="mf">0.800057</span>
+<span class="mi">8</span>  <span class="mf">0.800055</span>
+<span class="mf">8.05</span>  <span class="mf">0.800052</span>
+<span class="mf">8.1</span>  <span class="mf">0.800049</span>
+<span class="mf">8.15</span>  <span class="mf">0.800047</span>
+<span class="mf">8.2</span>  <span class="mf">0.800044</span>
+<span class="mf">8.25</span>  <span class="mf">0.800042</span>
+<span class="mf">8.3</span>  <span class="mf">0.80004</span>
+<span class="mf">8.35</span>  <span class="mf">0.800038</span>
+<span class="mf">8.4</span>  <span class="mf">0.800036</span>
+<span class="mf">8.45</span>  <span class="mf">0.800034</span>
+<span class="mf">8.5</span>  <span class="mf">0.800033</span>
+<span class="mf">8.55</span>  <span class="mf">0.800031</span>
+<span class="mf">8.6</span>  <span class="mf">0.800029</span>
+<span class="mf">8.65</span>  <span class="mf">0.800028</span>
+<span class="mf">8.7</span>  <span class="mf">0.800027</span>
+<span class="mf">8.75</span>  <span class="mf">0.800025</span>
+<span class="mf">8.8</span>  <span class="mf">0.800024</span>
+<span class="mf">8.85</span>  <span class="mf">0.800023</span>
+<span class="mf">8.9</span>  <span class="mf">0.800022</span>
+<span class="mf">8.95</span>  <span class="mf">0.800021</span>
+<span class="mi">9</span>  <span class="mf">0.80002</span>
+<span class="mf">9.05</span>  <span class="mf">0.800019</span>
+<span class="mf">9.1</span>  <span class="mf">0.800018</span>
+<span class="mf">9.15</span>  <span class="mf">0.800017</span>
+<span class="mf">9.2</span>  <span class="mf">0.800016</span>
+<span class="mf">9.25</span>  <span class="mf">0.800015</span>
+<span class="mf">9.3</span>  <span class="mf">0.800014</span>
+<span class="mf">9.35</span>  <span class="mf">0.800014</span>
+<span class="mf">9.4</span>  <span class="mf">0.800013</span>
+<span class="mf">9.45</span>  <span class="mf">0.800012</span>
+<span class="mf">9.5</span>  <span class="mf">0.800012</span>
+<span class="mf">9.55</span>  <span class="mf">0.800011</span>
+<span class="mf">9.6</span>  <span class="mf">0.800011</span>
+<span class="mf">9.65</span>  <span class="mf">0.80001</span>
+<span class="mf">9.7</span>  <span class="mf">0.80001</span>
+<span class="mf">9.75</span>  <span class="mf">0.800009</span>
+<span class="mf">9.8</span>  <span class="mf">0.800009</span>
+<span class="mf">9.85</span>  <span class="mf">0.800008</span>
+<span class="mf">9.9</span>  <span class="mf">0.800008</span>
+<span class="mf">9.95</span>  <span class="mf">0.800007</span>
+<span class="mi">10</span>  <span class="mf">0.800007</span>
+<span class="mf">10.05</span>  <span class="mf">0.800007</span>
+<span class="mf">10.1</span>  <span class="mf">0.800006</span>
+<span class="mf">10.15</span>  <span class="mf">0.800006</span>
+<span class="mf">10.2</span>  <span class="mf">0.800006</span>
+<span class="mf">10.25</span>  <span class="mf">0.800005</span>
+<span class="mf">10.3</span>  <span class="mf">0.800005</span>
+<span class="mf">10.35</span>  <span class="mf">0.800005</span>
+<span class="mf">10.4</span>  <span class="mf">0.800005</span>
+<span class="mf">10.45</span>  <span class="mf">0.800004</span>
+<span class="mf">10.5</span>  <span class="mf">0.800004</span>
+<span class="mf">10.55</span>  <span class="mf">0.800004</span>
+<span class="mf">10.6</span>  <span class="mf">0.800004</span>
+<span class="mf">10.65</span>  <span class="mf">0.800004</span>
+<span class="mf">10.7</span>  <span class="mf">0.800003</span>
+<span class="mf">10.75</span>  <span class="mf">0.800003</span>
+<span class="mf">10.8</span>  <span class="mf">0.800003</span>
+<span class="mf">10.85</span>  <span class="mf">0.800003</span>
+<span class="mf">10.9</span>  <span class="mf">0.800003</span>
+<span class="mf">10.95</span>  <span class="mf">0.800003</span>
+<span class="mi">11</span>  <span class="mf">0.800003</span>
+<span class="mf">11.05</span>  <span class="mf">0.800002</span>
+<span class="mf">11.1</span>  <span class="mf">0.800002</span>
+<span class="mf">11.15</span>  <span class="mf">0.800002</span>
+<span class="mf">11.2</span>  <span class="mf">0.800002</span>
+<span class="mf">11.25</span>  <span class="mf">0.800002</span>
+<span class="mf">11.3</span>  <span class="mf">0.800002</span>
+<span class="mf">11.35</span>  <span class="mf">0.800002</span>
+<span class="mf">11.4</span>  <span class="mf">0.800002</span>
+<span class="mf">11.45</span>  <span class="mf">0.800002</span>
+<span class="mf">11.5</span>  <span class="mf">0.800002</span>
+<span class="mf">11.55</span>  <span class="mf">0.800001</span>
+<span class="mf">11.6</span>  <span class="mf">0.800001</span>
+<span class="mf">11.65</span>  <span class="mf">0.800001</span>
+<span class="mf">11.7</span>  <span class="mf">0.800001</span>
+<span class="mf">11.75</span>  <span class="mf">0.800001</span>
+<span class="mf">11.8</span>  <span class="mf">0.800001</span>
+<span class="mf">11.85</span>  <span class="mf">0.800001</span>
+<span class="mf">11.9</span>  <span class="mf">0.800001</span>
+<span class="mf">11.95</span>  <span class="mf">0.800001</span>
+<span class="mi">12</span>  <span class="mf">0.800001</span>
+</pre></div>
+</div>
+</details>
+<details>
+<summary>Implicit Euler</summary>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span>    <span class="n">u</span>
+<span class="mi">0</span>  <span class="mi">1</span>
+<span class="mf">0.05</span>  <span class="mf">0.990476</span>
+<span class="mf">0.1</span>  <span class="mf">0.981406</span>
+<span class="mf">0.15</span>  <span class="mf">0.972768</span>
+<span class="mf">0.2</span>  <span class="mf">0.96454</span>
+<span class="mf">0.25</span>  <span class="mf">0.956705</span>
+<span class="mf">0.3</span>  <span class="mf">0.949243</span>
+<span class="mf">0.35</span>  <span class="mf">0.942136</span>
+<span class="mf">0.4</span>  <span class="mf">0.935368</span>
+<span class="mf">0.45</span>  <span class="mf">0.928922</span>
+<span class="mf">0.5</span>  <span class="mf">0.922783</span>
+<span class="mf">0.55</span>  <span class="mf">0.916936</span>
+<span class="mf">0.6</span>  <span class="mf">0.911367</span>
+<span class="mf">0.65</span>  <span class="mf">0.906064</span>
+<span class="mf">0.7</span>  <span class="mf">0.901014</span>
+<span class="mf">0.75</span>  <span class="mf">0.896203</span>
+<span class="mf">0.8</span>  <span class="mf">0.891622</span>
+<span class="mf">0.85</span>  <span class="mf">0.887259</span>
+<span class="mf">0.9</span>  <span class="mf">0.883104</span>
+<span class="mf">0.95</span>  <span class="mf">0.879147</span>
+<span class="mi">1</span>  <span class="mf">0.875378</span>
+<span class="mf">1.05</span>  <span class="mf">0.871788</span>
+<span class="mf">1.1</span>  <span class="mf">0.86837</span>
+<span class="mf">1.15</span>  <span class="mf">0.865114</span>
+<span class="mf">1.2</span>  <span class="mf">0.862014</span>
+<span class="mf">1.25</span>  <span class="mf">0.859061</span>
+<span class="mf">1.3</span>  <span class="mf">0.856248</span>
+<span class="mf">1.35</span>  <span class="mf">0.85357</span>
+<span class="mf">1.4</span>  <span class="mf">0.851019</span>
+<span class="mf">1.45</span>  <span class="mf">0.848589</span>
+<span class="mf">1.5</span>  <span class="mf">0.846275</span>
+<span class="mf">1.55</span>  <span class="mf">0.844072</span>
+<span class="mf">1.6</span>  <span class="mf">0.841973</span>
+<span class="mf">1.65</span>  <span class="mf">0.839975</span>
+<span class="mf">1.7</span>  <span class="mf">0.838071</span>
+<span class="mf">1.75</span>  <span class="mf">0.836258</span>
+<span class="mf">1.8</span>  <span class="mf">0.834531</span>
+<span class="mf">1.85</span>  <span class="mf">0.832887</span>
+<span class="mf">1.9</span>  <span class="mf">0.831321</span>
+<span class="mf">1.95</span>  <span class="mf">0.82983</span>
+<span class="mi">2</span>  <span class="mf">0.828409</span>
+<span class="mf">2.05</span>  <span class="mf">0.827056</span>
+<span class="mf">2.1</span>  <span class="mf">0.825768</span>
+<span class="mf">2.15</span>  <span class="mf">0.824541</span>
+<span class="mf">2.2</span>  <span class="mf">0.823372</span>
+<span class="mf">2.25</span>  <span class="mf">0.822259</span>
+<span class="mf">2.3</span>  <span class="mf">0.821199</span>
+<span class="mf">2.35</span>  <span class="mf">0.82019</span>
+<span class="mf">2.4</span>  <span class="mf">0.819228</span>
+<span class="mf">2.45</span>  <span class="mf">0.818313</span>
+<span class="mf">2.5</span>  <span class="mf">0.817441</span>
+<span class="mf">2.55</span>  <span class="mf">0.81661</span>
+<span class="mf">2.6</span>  <span class="mf">0.815819</span>
+<span class="mf">2.65</span>  <span class="mf">0.815066</span>
+<span class="mf">2.7</span>  <span class="mf">0.814349</span>
+<span class="mf">2.75</span>  <span class="mf">0.813665</span>
+<span class="mf">2.8</span>  <span class="mf">0.813015</span>
+<span class="mf">2.85</span>  <span class="mf">0.812395</span>
+<span class="mf">2.9</span>  <span class="mf">0.811805</span>
+<span class="mf">2.95</span>  <span class="mf">0.811242</span>
+<span class="mi">3</span>  <span class="mf">0.810707</span>
+<span class="mf">3.05</span>  <span class="mf">0.810197</span>
+<span class="mf">3.1</span>  <span class="mf">0.809712</span>
+<span class="mf">3.15</span>  <span class="mf">0.809249</span>
+<span class="mf">3.2</span>  <span class="mf">0.808809</span>
+<span class="mf">3.25</span>  <span class="mf">0.808389</span>
+<span class="mf">3.3</span>  <span class="mf">0.80799</span>
+<span class="mf">3.35</span>  <span class="mf">0.807609</span>
+<span class="mf">3.4</span>  <span class="mf">0.807247</span>
+<span class="mf">3.45</span>  <span class="mf">0.806902</span>
+<span class="mf">3.5</span>  <span class="mf">0.806573</span>
+<span class="mf">3.55</span>  <span class="mf">0.80626</span>
+<span class="mf">3.6</span>  <span class="mf">0.805962</span>
+<span class="mf">3.65</span>  <span class="mf">0.805678</span>
+<span class="mf">3.7</span>  <span class="mf">0.805408</span>
+<span class="mf">3.75</span>  <span class="mf">0.80515</span>
+<span class="mf">3.8</span>  <span class="mf">0.804905</span>
+<span class="mf">3.85</span>  <span class="mf">0.804671</span>
+<span class="mf">3.9</span>  <span class="mf">0.804449</span>
+<span class="mf">3.95</span>  <span class="mf">0.804237</span>
+<span class="mi">4</span>  <span class="mf">0.804035</span>
+<span class="mf">4.05</span>  <span class="mf">0.803843</span>
+<span class="mf">4.1</span>  <span class="mf">0.80366</span>
+<span class="mf">4.15</span>  <span class="mf">0.803486</span>
+<span class="mf">4.2</span>  <span class="mf">0.80332</span>
+<span class="mf">4.25</span>  <span class="mf">0.803162</span>
+<span class="mf">4.3</span>  <span class="mf">0.803011</span>
+<span class="mf">4.35</span>  <span class="mf">0.802868</span>
+<span class="mf">4.4</span>  <span class="mf">0.802731</span>
+<span class="mf">4.45</span>  <span class="mf">0.802601</span>
+<span class="mf">4.5</span>  <span class="mf">0.802477</span>
+<span class="mf">4.55</span>  <span class="mf">0.802359</span>
+<span class="mf">4.6</span>  <span class="mf">0.802247</span>
+<span class="mf">4.65</span>  <span class="mf">0.80214</span>
+<span class="mf">4.7</span>  <span class="mf">0.802038</span>
+<span class="mf">4.75</span>  <span class="mf">0.801941</span>
+<span class="mf">4.8</span>  <span class="mf">0.801849</span>
+<span class="mf">4.85</span>  <span class="mf">0.801761</span>
+<span class="mf">4.9</span>  <span class="mf">0.801677</span>
+<span class="mf">4.95</span>  <span class="mf">0.801597</span>
+<span class="mi">5</span>  <span class="mf">0.801521</span>
+<span class="mf">5.05</span>  <span class="mf">0.801448</span>
+<span class="mf">5.1</span>  <span class="mf">0.801379</span>
+<span class="mf">5.15</span>  <span class="mf">0.801314</span>
+<span class="mf">5.2</span>  <span class="mf">0.801251</span>
+<span class="mf">5.25</span>  <span class="mf">0.801192</span>
+<span class="mf">5.3</span>  <span class="mf">0.801135</span>
+<span class="mf">5.35</span>  <span class="mf">0.801081</span>
+<span class="mf">5.4</span>  <span class="mf">0.801029</span>
+<span class="mf">5.45</span>  <span class="mf">0.80098</span>
+<span class="mf">5.5</span>  <span class="mf">0.800934</span>
+<span class="mf">5.55</span>  <span class="mf">0.800889</span>
+<span class="mf">5.6</span>  <span class="mf">0.800847</span>
+<span class="mf">5.65</span>  <span class="mf">0.800807</span>
+<span class="mf">5.7</span>  <span class="mf">0.800768</span>
+<span class="mf">5.75</span>  <span class="mf">0.800732</span>
+<span class="mf">5.8</span>  <span class="mf">0.800697</span>
+<span class="mf">5.85</span>  <span class="mf">0.800664</span>
+<span class="mf">5.9</span>  <span class="mf">0.800632</span>
+<span class="mf">5.95</span>  <span class="mf">0.800602</span>
+<span class="mi">6</span>  <span class="mf">0.800573</span>
+<span class="mf">6.05</span>  <span class="mf">0.800546</span>
+<span class="mf">6.1</span>  <span class="mf">0.80052</span>
+<span class="mf">6.15</span>  <span class="mf">0.800495</span>
+<span class="mf">6.2</span>  <span class="mf">0.800472</span>
+<span class="mf">6.25</span>  <span class="mf">0.800449</span>
+<span class="mf">6.3</span>  <span class="mf">0.800428</span>
+<span class="mf">6.35</span>  <span class="mf">0.800407</span>
+<span class="mf">6.4</span>  <span class="mf">0.800388</span>
+<span class="mf">6.45</span>  <span class="mf">0.800369</span>
+<span class="mf">6.5</span>  <span class="mf">0.800352</span>
+<span class="mf">6.55</span>  <span class="mf">0.800335</span>
+<span class="mf">6.6</span>  <span class="mf">0.800319</span>
+<span class="mf">6.65</span>  <span class="mf">0.800304</span>
+<span class="mf">6.7</span>  <span class="mf">0.80029</span>
+<span class="mf">6.75</span>  <span class="mf">0.800276</span>
+<span class="mf">6.8</span>  <span class="mf">0.800263</span>
+<span class="mf">6.85</span>  <span class="mf">0.80025</span>
+<span class="mf">6.9</span>  <span class="mf">0.800238</span>
+<span class="mf">6.95</span>  <span class="mf">0.800227</span>
+<span class="mi">7</span>  <span class="mf">0.800216</span>
+<span class="mf">7.05</span>  <span class="mf">0.800206</span>
+<span class="mf">7.1</span>  <span class="mf">0.800196</span>
+<span class="mf">7.15</span>  <span class="mf">0.800187</span>
+<span class="mf">7.2</span>  <span class="mf">0.800178</span>
+<span class="mf">7.25</span>  <span class="mf">0.800169</span>
+<span class="mf">7.3</span>  <span class="mf">0.800161</span>
+<span class="mf">7.35</span>  <span class="mf">0.800154</span>
+<span class="mf">7.4</span>  <span class="mf">0.800146</span>
+<span class="mf">7.45</span>  <span class="mf">0.800139</span>
+<span class="mf">7.5</span>  <span class="mf">0.800133</span>
+<span class="mf">7.55</span>  <span class="mf">0.800126</span>
+<span class="mf">7.6</span>  <span class="mf">0.80012</span>
+<span class="mf">7.65</span>  <span class="mf">0.800115</span>
+<span class="mf">7.7</span>  <span class="mf">0.800109</span>
+<span class="mf">7.75</span>  <span class="mf">0.800104</span>
+<span class="mf">7.8</span>  <span class="mf">0.800099</span>
+<span class="mf">7.85</span>  <span class="mf">0.800094</span>
+<span class="mf">7.9</span>  <span class="mf">0.80009</span>
+<span class="mf">7.95</span>  <span class="mf">0.800085</span>
+<span class="mi">8</span>  <span class="mf">0.800081</span>
+<span class="mf">8.05</span>  <span class="mf">0.800078</span>
+<span class="mf">8.1</span>  <span class="mf">0.800074</span>
+<span class="mf">8.15</span>  <span class="mf">0.80007</span>
+<span class="mf">8.2</span>  <span class="mf">0.800067</span>
+<span class="mf">8.25</span>  <span class="mf">0.800064</span>
+<span class="mf">8.3</span>  <span class="mf">0.800061</span>
+<span class="mf">8.35</span>  <span class="mf">0.800058</span>
+<span class="mf">8.4</span>  <span class="mf">0.800055</span>
+<span class="mf">8.45</span>  <span class="mf">0.800052</span>
+<span class="mf">8.5</span>  <span class="mf">0.80005</span>
+<span class="mf">8.55</span>  <span class="mf">0.800048</span>
+<span class="mf">8.6</span>  <span class="mf">0.800045</span>
+<span class="mf">8.65</span>  <span class="mf">0.800043</span>
+<span class="mf">8.7</span>  <span class="mf">0.800041</span>
+<span class="mf">8.75</span>  <span class="mf">0.800039</span>
+<span class="mf">8.8</span>  <span class="mf">0.800037</span>
+<span class="mf">8.85</span>  <span class="mf">0.800036</span>
+<span class="mf">8.9</span>  <span class="mf">0.800034</span>
+<span class="mf">8.95</span>  <span class="mf">0.800032</span>
+<span class="mi">9</span>  <span class="mf">0.800031</span>
+<span class="mf">9.05</span>  <span class="mf">0.800029</span>
+<span class="mf">9.1</span>  <span class="mf">0.800028</span>
+<span class="mf">9.15</span>  <span class="mf">0.800027</span>
+<span class="mf">9.2</span>  <span class="mf">0.800025</span>
+<span class="mf">9.25</span>  <span class="mf">0.800024</span>
+<span class="mf">9.3</span>  <span class="mf">0.800023</span>
+<span class="mf">9.35</span>  <span class="mf">0.800022</span>
+<span class="mf">9.4</span>  <span class="mf">0.800021</span>
+<span class="mf">9.45</span>  <span class="mf">0.80002</span>
+<span class="mf">9.5</span>  <span class="mf">0.800019</span>
+<span class="mf">9.55</span>  <span class="mf">0.800018</span>
+<span class="mf">9.6</span>  <span class="mf">0.800017</span>
+<span class="mf">9.65</span>  <span class="mf">0.800016</span>
+<span class="mf">9.7</span>  <span class="mf">0.800015</span>
+<span class="mf">9.75</span>  <span class="mf">0.800015</span>
+<span class="mf">9.8</span>  <span class="mf">0.800014</span>
+<span class="mf">9.85</span>  <span class="mf">0.800013</span>
+<span class="mf">9.9</span>  <span class="mf">0.800013</span>
+<span class="mf">9.95</span>  <span class="mf">0.800012</span>
+<span class="mi">10</span>  <span class="mf">0.800012</span>
+<span class="mf">10.05</span>  <span class="mf">0.800011</span>
+<span class="mf">10.1</span>  <span class="mf">0.80001</span>
+<span class="mf">10.15</span>  <span class="mf">0.80001</span>
+<span class="mf">10.2</span>  <span class="mf">0.80001</span>
+<span class="mf">10.25</span>  <span class="mf">0.800009</span>
+<span class="mf">10.3</span>  <span class="mf">0.800009</span>
+<span class="mf">10.35</span>  <span class="mf">0.800008</span>
+<span class="mf">10.4</span>  <span class="mf">0.800008</span>
+<span class="mf">10.45</span>  <span class="mf">0.800007</span>
+<span class="mf">10.5</span>  <span class="mf">0.800007</span>
+<span class="mf">10.55</span>  <span class="mf">0.800007</span>
+<span class="mf">10.6</span>  <span class="mf">0.800006</span>
+<span class="mf">10.65</span>  <span class="mf">0.800006</span>
+<span class="mf">10.7</span>  <span class="mf">0.800006</span>
+<span class="mf">10.75</span>  <span class="mf">0.800006</span>
+<span class="mf">10.8</span>  <span class="mf">0.800005</span>
+<span class="mf">10.85</span>  <span class="mf">0.800005</span>
+<span class="mf">10.9</span>  <span class="mf">0.800005</span>
+<span class="mf">10.95</span>  <span class="mf">0.800005</span>
+<span class="mi">11</span>  <span class="mf">0.800004</span>
+<span class="mf">11.05</span>  <span class="mf">0.800004</span>
+<span class="mf">11.1</span>  <span class="mf">0.800004</span>
+<span class="mf">11.15</span>  <span class="mf">0.800004</span>
+<span class="mf">11.2</span>  <span class="mf">0.800004</span>
+<span class="mf">11.25</span>  <span class="mf">0.800003</span>
+<span class="mf">11.3</span>  <span class="mf">0.800003</span>
+<span class="mf">11.35</span>  <span class="mf">0.800003</span>
+<span class="mf">11.4</span>  <span class="mf">0.800003</span>
+<span class="mf">11.45</span>  <span class="mf">0.800003</span>
+<span class="mf">11.5</span>  <span class="mf">0.800003</span>
+<span class="mf">11.55</span>  <span class="mf">0.800003</span>
+<span class="mf">11.6</span>  <span class="mf">0.800002</span>
+<span class="mf">11.65</span>  <span class="mf">0.800002</span>
+<span class="mf">11.7</span>  <span class="mf">0.800002</span>
+<span class="mf">11.75</span>  <span class="mf">0.800002</span>
+<span class="mf">11.8</span>  <span class="mf">0.800002</span>
+<span class="mf">11.85</span>  <span class="mf">0.800002</span>
+<span class="mf">11.9</span>  <span class="mf">0.800002</span>
+<span class="mf">11.95</span>  <span class="mf">0.800002</span>
+<span class="mi">12</span>  <span class="mf">0.800002</span>
+</pre></div>
+</div>
+</details>
+<details>
+<summary>Improved Euler</summary>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span>    <span class="n">u</span>
+<span class="mi">0</span>  <span class="mi">1</span>
+<span class="mf">0.05</span>  <span class="mf">0.99025</span>
+<span class="mf">0.1</span>  <span class="mf">0.980975</span>
+<span class="mf">0.15</span>  <span class="mf">0.972153</span>
+<span class="mf">0.2</span>  <span class="mf">0.96376</span>
+<span class="mf">0.25</span>  <span class="mf">0.955777</span>
+<span class="mf">0.3</span>  <span class="mf">0.948183</span>
+<span class="mf">0.35</span>  <span class="mf">0.940959</span>
+<span class="mf">0.4</span>  <span class="mf">0.934087</span>
+<span class="mf">0.45</span>  <span class="mf">0.92755</span>
+<span class="mf">0.5</span>  <span class="mf">0.921332</span>
+<span class="mf">0.55</span>  <span class="mf">0.915417</span>
+<span class="mf">0.6</span>  <span class="mf">0.909791</span>
+<span class="mf">0.65</span>  <span class="mf">0.904439</span>
+<span class="mf">0.7</span>  <span class="mf">0.899347</span>
+<span class="mf">0.75</span>  <span class="mf">0.894504</span>
+<span class="mf">0.8</span>  <span class="mf">0.889897</span>
+<span class="mf">0.85</span>  <span class="mf">0.885514</span>
+<span class="mf">0.9</span>  <span class="mf">0.881346</span>
+<span class="mf">0.95</span>  <span class="mf">0.87738</span>
+<span class="mi">1</span>  <span class="mf">0.873608</span>
+<span class="mf">1.05</span>  <span class="mf">0.870019</span>
+<span class="mf">1.1</span>  <span class="mf">0.866606</span>
+<span class="mf">1.15</span>  <span class="mf">0.863359</span>
+<span class="mf">1.2</span>  <span class="mf">0.86027</span>
+<span class="mf">1.25</span>  <span class="mf">0.857332</span>
+<span class="mf">1.3</span>  <span class="mf">0.854537</span>
+<span class="mf">1.35</span>  <span class="mf">0.851878</span>
+<span class="mf">1.4</span>  <span class="mf">0.849349</span>
+<span class="mf">1.45</span>  <span class="mf">0.846943</span>
+<span class="mf">1.5</span>  <span class="mf">0.844655</span>
+<span class="mf">1.55</span>  <span class="mf">0.842478</span>
+<span class="mf">1.6</span>  <span class="mf">0.840407</span>
+<span class="mf">1.65</span>  <span class="mf">0.838437</span>
+<span class="mf">1.7</span>  <span class="mf">0.836564</span>
+<span class="mf">1.75</span>  <span class="mf">0.834781</span>
+<span class="mf">1.8</span>  <span class="mf">0.833086</span>
+<span class="mf">1.85</span>  <span class="mf">0.831473</span>
+<span class="mf">1.9</span>  <span class="mf">0.829938</span>
+<span class="mf">1.95</span>  <span class="mf">0.828479</span>
+<span class="mi">2</span>  <span class="mf">0.82709</span>
+<span class="mf">2.05</span>  <span class="mf">0.82577</span>
+<span class="mf">2.1</span>  <span class="mf">0.824514</span>
+<span class="mf">2.15</span>  <span class="mf">0.823319</span>
+<span class="mf">2.2</span>  <span class="mf">0.822182</span>
+<span class="mf">2.25</span>  <span class="mf">0.8211</span>
+<span class="mf">2.3</span>  <span class="mf">0.820072</span>
+<span class="mf">2.35</span>  <span class="mf">0.819093</span>
+<span class="mf">2.4</span>  <span class="mf">0.818162</span>
+<span class="mf">2.45</span>  <span class="mf">0.817277</span>
+<span class="mf">2.5</span>  <span class="mf">0.816435</span>
+<span class="mf">2.55</span>  <span class="mf">0.815634</span>
+<span class="mf">2.6</span>  <span class="mf">0.814871</span>
+<span class="mf">2.65</span>  <span class="mf">0.814146</span>
+<span class="mf">2.7</span>  <span class="mf">0.813457</span>
+<span class="mf">2.75</span>  <span class="mf">0.812801</span>
+<span class="mf">2.8</span>  <span class="mf">0.812177</span>
+<span class="mf">2.85</span>  <span class="mf">0.811583</span>
+<span class="mf">2.9</span>  <span class="mf">0.811018</span>
+<span class="mf">2.95</span>  <span class="mf">0.810481</span>
+<span class="mi">3</span>  <span class="mf">0.80997</span>
+<span class="mf">3.05</span>  <span class="mf">0.809484</span>
+<span class="mf">3.1</span>  <span class="mf">0.809022</span>
+<span class="mf">3.15</span>  <span class="mf">0.808582</span>
+<span class="mf">3.2</span>  <span class="mf">0.808164</span>
+<span class="mf">3.25</span>  <span class="mf">0.807766</span>
+<span class="mf">3.3</span>  <span class="mf">0.807387</span>
+<span class="mf">3.35</span>  <span class="mf">0.807027</span>
+<span class="mf">3.4</span>  <span class="mf">0.806684</span>
+<span class="mf">3.45</span>  <span class="mf">0.806359</span>
+<span class="mf">3.5</span>  <span class="mf">0.806049</span>
+<span class="mf">3.55</span>  <span class="mf">0.805754</span>
+<span class="mf">3.6</span>  <span class="mf">0.805473</span>
+<span class="mf">3.65</span>  <span class="mf">0.805206</span>
+<span class="mf">3.7</span>  <span class="mf">0.804953</span>
+<span class="mf">3.75</span>  <span class="mf">0.804711</span>
+<span class="mf">3.8</span>  <span class="mf">0.804482</span>
+<span class="mf">3.85</span>  <span class="mf">0.804263</span>
+<span class="mf">3.9</span>  <span class="mf">0.804055</span>
+<span class="mf">3.95</span>  <span class="mf">0.803858</span>
+<span class="mi">4</span>  <span class="mf">0.803669</span>
+<span class="mf">4.05</span>  <span class="mf">0.803491</span>
+<span class="mf">4.1</span>  <span class="mf">0.80332</span>
+<span class="mf">4.15</span>  <span class="mf">0.803159</span>
+<span class="mf">4.2</span>  <span class="mf">0.803005</span>
+<span class="mf">4.25</span>  <span class="mf">0.802858</span>
+<span class="mf">4.3</span>  <span class="mf">0.802719</span>
+<span class="mf">4.35</span>  <span class="mf">0.802586</span>
+<span class="mf">4.4</span>  <span class="mf">0.80246</span>
+<span class="mf">4.45</span>  <span class="mf">0.80234</span>
+<span class="mf">4.5</span>  <span class="mf">0.802226</span>
+<span class="mf">4.55</span>  <span class="mf">0.802118</span>
+<span class="mf">4.6</span>  <span class="mf">0.802014</span>
+<span class="mf">4.65</span>  <span class="mf">0.801916</span>
+<span class="mf">4.7</span>  <span class="mf">0.801823</span>
+<span class="mf">4.75</span>  <span class="mf">0.801734</span>
+<span class="mf">4.8</span>  <span class="mf">0.801649</span>
+<span class="mf">4.85</span>  <span class="mf">0.801569</span>
+<span class="mf">4.9</span>  <span class="mf">0.801492</span>
+<span class="mf">4.95</span>  <span class="mf">0.80142</span>
+<span class="mi">5</span>  <span class="mf">0.801351</span>
+<span class="mf">5.05</span>  <span class="mf">0.801285</span>
+<span class="mf">5.1</span>  <span class="mf">0.801222</span>
+<span class="mf">5.15</span>  <span class="mf">0.801162</span>
+<span class="mf">5.2</span>  <span class="mf">0.801106</span>
+<span class="mf">5.25</span>  <span class="mf">0.801052</span>
+<span class="mf">5.3</span>  <span class="mf">0.801001</span>
+<span class="mf">5.35</span>  <span class="mf">0.800952</span>
+<span class="mf">5.4</span>  <span class="mf">0.800905</span>
+<span class="mf">5.45</span>  <span class="mf">0.800861</span>
+<span class="mf">5.5</span>  <span class="mf">0.800819</span>
+<span class="mf">5.55</span>  <span class="mf">0.800779</span>
+<span class="mf">5.6</span>  <span class="mf">0.800741</span>
+<span class="mf">5.65</span>  <span class="mf">0.800705</span>
+<span class="mf">5.7</span>  <span class="mf">0.800671</span>
+<span class="mf">5.75</span>  <span class="mf">0.800638</span>
+<span class="mf">5.8</span>  <span class="mf">0.800607</span>
+<span class="mf">5.85</span>  <span class="mf">0.800577</span>
+<span class="mf">5.9</span>  <span class="mf">0.800549</span>
+<span class="mf">5.95</span>  <span class="mf">0.800523</span>
+<span class="mi">6</span>  <span class="mf">0.800497</span>
+<span class="mf">6.05</span>  <span class="mf">0.800473</span>
+<span class="mf">6.1</span>  <span class="mf">0.80045</span>
+<span class="mf">6.15</span>  <span class="mf">0.800428</span>
+<span class="mf">6.2</span>  <span class="mf">0.800407</span>
+<span class="mf">6.25</span>  <span class="mf">0.800387</span>
+<span class="mf">6.3</span>  <span class="mf">0.800368</span>
+<span class="mf">6.35</span>  <span class="mf">0.80035</span>
+<span class="mf">6.4</span>  <span class="mf">0.800333</span>
+<span class="mf">6.45</span>  <span class="mf">0.800317</span>
+<span class="mf">6.5</span>  <span class="mf">0.800302</span>
+<span class="mf">6.55</span>  <span class="mf">0.800287</span>
+<span class="mf">6.6</span>  <span class="mf">0.800273</span>
+<span class="mf">6.65</span>  <span class="mf">0.80026</span>
+<span class="mf">6.7</span>  <span class="mf">0.800247</span>
+<span class="mf">6.75</span>  <span class="mf">0.800235</span>
+<span class="mf">6.8</span>  <span class="mf">0.800223</span>
+<span class="mf">6.85</span>  <span class="mf">0.800213</span>
+<span class="mf">6.9</span>  <span class="mf">0.800202</span>
+<span class="mf">6.95</span>  <span class="mf">0.800192</span>
+<span class="mi">7</span>  <span class="mf">0.800183</span>
+<span class="mf">7.05</span>  <span class="mf">0.800174</span>
+<span class="mf">7.1</span>  <span class="mf">0.800166</span>
+<span class="mf">7.15</span>  <span class="mf">0.800157</span>
+<span class="mf">7.2</span>  <span class="mf">0.80015</span>
+<span class="mf">7.25</span>  <span class="mf">0.800142</span>
+<span class="mf">7.3</span>  <span class="mf">0.800136</span>
+<span class="mf">7.35</span>  <span class="mf">0.800129</span>
+<span class="mf">7.4</span>  <span class="mf">0.800123</span>
+<span class="mf">7.45</span>  <span class="mf">0.800117</span>
+<span class="mf">7.5</span>  <span class="mf">0.800111</span>
+<span class="mf">7.55</span>  <span class="mf">0.800106</span>
+<span class="mf">7.6</span>  <span class="mf">0.8001</span>
+<span class="mf">7.65</span>  <span class="mf">0.800096</span>
+<span class="mf">7.7</span>  <span class="mf">0.800091</span>
+<span class="mf">7.75</span>  <span class="mf">0.800086</span>
+<span class="mf">7.8</span>  <span class="mf">0.800082</span>
+<span class="mf">7.85</span>  <span class="mf">0.800078</span>
+<span class="mf">7.9</span>  <span class="mf">0.800074</span>
+<span class="mf">7.95</span>  <span class="mf">0.800071</span>
+<span class="mi">8</span>  <span class="mf">0.800067</span>
+<span class="mf">8.05</span>  <span class="mf">0.800064</span>
+<span class="mf">8.1</span>  <span class="mf">0.800061</span>
+<span class="mf">8.15</span>  <span class="mf">0.800058</span>
+<span class="mf">8.2</span>  <span class="mf">0.800055</span>
+<span class="mf">8.25</span>  <span class="mf">0.800052</span>
+<span class="mf">8.3</span>  <span class="mf">0.80005</span>
+<span class="mf">8.35</span>  <span class="mf">0.800047</span>
+<span class="mf">8.4</span>  <span class="mf">0.800045</span>
+<span class="mf">8.45</span>  <span class="mf">0.800043</span>
+<span class="mf">8.5</span>  <span class="mf">0.800041</span>
+<span class="mf">8.55</span>  <span class="mf">0.800039</span>
+<span class="mf">8.6</span>  <span class="mf">0.800037</span>
+<span class="mf">8.65</span>  <span class="mf">0.800035</span>
+<span class="mf">8.7</span>  <span class="mf">0.800033</span>
+<span class="mf">8.75</span>  <span class="mf">0.800032</span>
+<span class="mf">8.8</span>  <span class="mf">0.80003</span>
+<span class="mf">8.85</span>  <span class="mf">0.800029</span>
+<span class="mf">8.9</span>  <span class="mf">0.800027</span>
+<span class="mf">8.95</span>  <span class="mf">0.800026</span>
+<span class="mi">9</span>  <span class="mf">0.800025</span>
+<span class="mf">9.05</span>  <span class="mf">0.800024</span>
+<span class="mf">9.1</span>  <span class="mf">0.800022</span>
+<span class="mf">9.15</span>  <span class="mf">0.800021</span>
+<span class="mf">9.2</span>  <span class="mf">0.80002</span>
+<span class="mf">9.25</span>  <span class="mf">0.800019</span>
+<span class="mf">9.3</span>  <span class="mf">0.800018</span>
+<span class="mf">9.35</span>  <span class="mf">0.800017</span>
+<span class="mf">9.4</span>  <span class="mf">0.800017</span>
+<span class="mf">9.45</span>  <span class="mf">0.800016</span>
+<span class="mf">9.5</span>  <span class="mf">0.800015</span>
+<span class="mf">9.55</span>  <span class="mf">0.800014</span>
+<span class="mf">9.6</span>  <span class="mf">0.800014</span>
+<span class="mf">9.65</span>  <span class="mf">0.800013</span>
+<span class="mf">9.7</span>  <span class="mf">0.800012</span>
+<span class="mf">9.75</span>  <span class="mf">0.800012</span>
+<span class="mf">9.8</span>  <span class="mf">0.800011</span>
+<span class="mf">9.85</span>  <span class="mf">0.800011</span>
+<span class="mf">9.9</span>  <span class="mf">0.80001</span>
+<span class="mf">9.95</span>  <span class="mf">0.80001</span>
+<span class="mi">10</span>  <span class="mf">0.800009</span>
+<span class="mf">10.05</span>  <span class="mf">0.800009</span>
+<span class="mf">10.1</span>  <span class="mf">0.800008</span>
+<span class="mf">10.15</span>  <span class="mf">0.800008</span>
+<span class="mf">10.2</span>  <span class="mf">0.800007</span>
+<span class="mf">10.25</span>  <span class="mf">0.800007</span>
+<span class="mf">10.3</span>  <span class="mf">0.800007</span>
+<span class="mf">10.35</span>  <span class="mf">0.800006</span>
+<span class="mf">10.4</span>  <span class="mf">0.800006</span>
+<span class="mf">10.45</span>  <span class="mf">0.800006</span>
+<span class="mf">10.5</span>  <span class="mf">0.800006</span>
+<span class="mf">10.55</span>  <span class="mf">0.800005</span>
+<span class="mf">10.6</span>  <span class="mf">0.800005</span>
+<span class="mf">10.65</span>  <span class="mf">0.800005</span>
+<span class="mf">10.7</span>  <span class="mf">0.800005</span>
+<span class="mf">10.75</span>  <span class="mf">0.800004</span>
+<span class="mf">10.8</span>  <span class="mf">0.800004</span>
+<span class="mf">10.85</span>  <span class="mf">0.800004</span>
+<span class="mf">10.9</span>  <span class="mf">0.800004</span>
+<span class="mf">10.95</span>  <span class="mf">0.800004</span>
+<span class="mi">11</span>  <span class="mf">0.800003</span>
+<span class="mf">11.05</span>  <span class="mf">0.800003</span>
+<span class="mf">11.1</span>  <span class="mf">0.800003</span>
+<span class="mf">11.15</span>  <span class="mf">0.800003</span>
+<span class="mf">11.2</span>  <span class="mf">0.800003</span>
+<span class="mf">11.25</span>  <span class="mf">0.800003</span>
+<span class="mf">11.3</span>  <span class="mf">0.800002</span>
+<span class="mf">11.35</span>  <span class="mf">0.800002</span>
+<span class="mf">11.4</span>  <span class="mf">0.800002</span>
+<span class="mf">11.45</span>  <span class="mf">0.800002</span>
+<span class="mf">11.5</span>  <span class="mf">0.800002</span>
+<span class="mf">11.55</span>  <span class="mf">0.800002</span>
+<span class="mf">11.6</span>  <span class="mf">0.800002</span>
+<span class="mf">11.65</span>  <span class="mf">0.800002</span>
+<span class="mf">11.7</span>  <span class="mf">0.800002</span>
+<span class="mf">11.75</span>  <span class="mf">0.800002</span>
+<span class="mf">11.8</span>  <span class="mf">0.800002</span>
+<span class="mf">11.85</span>  <span class="mf">0.800001</span>
+<span class="mf">11.9</span>  <span class="mf">0.800001</span>
+<span class="mf">11.95</span>  <span class="mf">0.800001</span>
+<span class="mi">12</span>  <span class="mf">0.800001</span>
+</pre></div>
+</div>
+</details>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="intro.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Welcome to ASC-ODE’s documentation!</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="exer18.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Exercise 18 — AutoDiff Legendre Polynomials</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#explicit-euler">Explicit Euler</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stabilized-explicit-euler-square">Stabilized Explicit Euler (Square)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#improved-euler">Improved Euler</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implicit-euler">Implicit Euler</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cranknicolson">Crank–Nicolson</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparison-across-time-steps">Comparison across time steps</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rc-circuit-benchmarks-test-rc-output">RC circuit benchmarks (test_rc output)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#case-1-r-1-c-1-e0-1-u0-0-tend-10-steps-200-0-05">Case 1 — R=1, C=1, E0=1, u0=0, tend=10, steps=200 (τ=0.05)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#case-2-r-2-c-0-5-e0-1-5-u0-0-5-tend-8-steps-120-0-0667">Case 2 — R=2, C=0.5, E0=1.5, u0=0.5, tend=8, steps=120 (τ≈0.0667)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#case-3-r-0-5-c-2-e0-0-8-u0-1-tend-12-steps-240-0-05">Case 3 — R=0.5, C=2, E0=0.8, u0=1, tend=12, steps=240 (τ=0.05)</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Team 14
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
