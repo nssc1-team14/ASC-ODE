@@ -61,36 +61,50 @@ int main()
   // ImprovedEuler stepper(rhs);
   // CrankNicolson stepper(rhs);
 
-  // RungeKutta stepper(rhs, Gauss2a, Gauss2b, Gauss2c);
+  // ImplicitRungeKutta stepper(rhs, Gauss2a, Gauss2b, Gauss2c);
 
   // Gauss3c .. points tabulated, compute a,b:
   // auto [Gauss3a,Gauss3b] = ComputeABfromC (Gauss3c);
   // ImplicitRungeKutta stepper(rhs, Gauss3a, Gauss3b, Gauss3c);
 
 
-  /*
-  // arbitrary order Gauss-Legendre
-  int stages = 5;
-  Vector<> c(stages), b1(stages);
-  GaussLegendre(c, b1);
 
-  auto [a, b] = ComputeABfromC(c);
-  ImplicitRungeKutta stepper(rhs, a, b, c);
-  */
+  // // arbitrary order Gauss-Legendre
+  // int stages = 5;
+  // Vector<> c(stages), b1(stages);
+  // GaussLegendre(c, b1);
+  //
+  // auto [a, b] = ComputeABfromC(c);
+  // ImplicitRungeKutta stepper(rhs, a, b, c);
+  //
 
-  /*
-  // arbitrary order Radau
-  int stages = 5;
-  Vector<> c(stages), b1(stages);
-  GaussRadau(c, b1);
+   /*
+   // arbitrary order Radau
+   int stages = 5;
+   Vector<> c(stages), b1(stages);
+   GaussRadau(c, b1);
 
-  auto [a, b] = ComputeABfromC(c);
-  ImplicitRungeKutta stepper(rhs, a, b, c);
-  */
+   auto [a, b] = ComputeABfromC(c);
+   ImplicitRungeKutta stepper(rhs, a, b, c);
+   */
 
-  Matrix<> a1(1,1); a1(0,0) = 0.0;
-  Vector<> b1(1);   b1(0) = 1.0;
-  Vector<> c1(1);   c1(0) = 0.0;
+  Matrix<> a1(4,4);
+  a1 = 0.0;
+  a1(1,0) = 0.5;
+  a1(2,1) = 0.5;
+  a1(3,2) = 1.0;
+
+  Vector<> b1(4);
+  b1(0) = 1.0/6.0;
+  b1(1) = 1.0/3.0;
+  b1(2) = 1.0/3.0;
+  b1(3) = 1.0/6.0;
+
+  Vector<> c1(4);
+  c1(0) = 0.0;
+  c1(1) = 0.5;
+  c1(2) = 0.5;
+  c1(3) = 1.0;
 
   ExplicitRungeKutta stepper(rhs, a1, b1, c1);
 

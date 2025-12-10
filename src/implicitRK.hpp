@@ -169,7 +169,7 @@ void GaussJacobi (VectorView<> x, VectorView<> w, const double alf, const double
     if (its > MAXIT) throw("too many iterations in gaujac");
     x[i]=z;    // Store the root and the weight.
     w[i]=exp(std::lgamma(alf+n)+std::lgamma(bet+n)-std::lgamma(n+1.0)-
-             std::lgamma(n+alfbet+1.0))*temp*pow(2.0,alfbet)/(pp*p2);
+             std::lgamma(n+alfbet+1.0))*temp*std::pow(2.0,alfbet)/(pp*p2);
   }
 }
 
